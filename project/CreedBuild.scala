@@ -86,7 +86,7 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.logback
       ++ Libs.scaldiAkka
       ++ Libs.bijection
-  )
+  ).dependsOn(core)
 
   lazy val service = Project(
     id = "creed-service",
