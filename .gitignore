@@ -35,3 +35,5 @@ conceptindex*
 dictionaryDb*
 *.txt*
 
+# ds store (for mac)
+.DS_Store
