@@ -1,4 +1,4 @@
-package creed.indexer
+package creed.indexer.protocols
 
 import creed.core._
 

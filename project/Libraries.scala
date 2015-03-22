@@ -44,11 +44,15 @@ trait Libraries {
     val retry           = "0.2.0"
     val odelay          = "0.1.0"
     val researchpaperParser = "1.0"
+    val kafka           = "0.8.2.0"
   }
 
 
 
   object Libs {
+
+    val kafka = Seq (
+      "org.apache.kafka" %% "kafka" % Version.kafka)
 
     val factorie = Seq (
       "cc.factorie" % "factorie" % Version.factorie)

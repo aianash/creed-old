@@ -5,10 +5,11 @@ import org.apache.lucene.index._
 import akka.actor.Actor
 
 class CatalogueIndexer(writer: IndexWriter) extends Actor {
+  import protocols._
 
   val converter = new CatalogueItemToDocument
 
-  def receive() = {
+  def receive = {
     case IndexCatalogue(catalogueItem) =>
       val catalogueDocument = converter.convert(catalogueItem)
       writer.addDocument(catalogueDocument)
