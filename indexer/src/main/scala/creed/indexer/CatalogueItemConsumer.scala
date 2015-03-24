@@ -9,6 +9,9 @@ import kafka.serializer.DefaultDecoder
 
 import creed.core._
 
+/**
+ * Actor to get data from kafka in batch.
+ */
 class CatalogueItemConsumer(connector: ConsumerConnector) extends Actor {
 
   import protocols._
@@ -28,6 +31,10 @@ class CatalogueItemConsumer(connector: ConsumerConnector) extends Actor {
       }
   }
 
+  /**
+   * Return next batch of indexing items from kafka
+   * @param {Int} batchSize: Batch Size
+   */
   private def getNextBatch(batchSize: Int) = {
     Try {
       (0 to batchSize).foldLeft (List.empty[CatalogueItem]) { (batch, _) =>

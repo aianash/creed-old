@@ -48,6 +48,10 @@ object IndexingServer {
     system.scheduler.schedule(0 milliseconds, 1 seconds, consumer, ReadNextCatalogueItem(10))
   }
 
+  /**
+   * Returns an instance of ConsumerConnector with settings as an
+   * input parameter
+   */
   def getConnector(settings: OnyxSettings): ConsumerConnector = {
     val props = new Properties()
     props.put("group.id", settings.GroupId)
