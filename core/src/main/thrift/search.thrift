@@ -38,7 +38,7 @@ struct CatalogueSearchQuery {
 }
 
 struct CatalogueSearchId {
-  1: common.userId userId;
+  1: common.UserId userId;
   2: i64 sruid;
 }
 

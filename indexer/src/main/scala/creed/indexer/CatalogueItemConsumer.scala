@@ -22,7 +22,7 @@ class CatalogueItemConsumer(connector: ConsumerConnector) extends Actor {
   val iterator = stream.iterator()
 
   def receive = {
-    case ReadNextCatalogueItem(batchSize) =>
+    case ReadNextCatalogueBatch(batchSize) =>
       val replyTo = sender();
 
       getNextBatch(batchSize) match {

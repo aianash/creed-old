@@ -21,6 +21,8 @@ class OnyxSettings(cfg: Config) extends Extension {
   val AutoOffsetReset = config.getString("onyx.catalogue.kafka.auto-offset-reset")
   val ConsumerTimoutMs = config.getString("onyx.catalogue.kafka.consumer-timeout-ms")
   val ActorSystem = config.getString("onyx.catalogue.actorSystem")
+  val IndexSchedulingBackoffLimit = config.getInt("onyx.catalogue.indexer.backoff-limit")
+  val IndexingBatchSize = config.getInt("onyx.catalogue.indexer.batch-size")
 
 }
 

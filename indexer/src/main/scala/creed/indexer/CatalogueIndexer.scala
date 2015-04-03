@@ -2,18 +2,90 @@ package creed.indexer
 
 import org.apache.lucene.index._
 
-import akka.actor.Actor
+import creed.core._
 
-class CatalogueIndexer(writer: IndexWriter) extends Actor {
+import scala.concurrent.Future
+import scala.util.{Try, Success, Failure}
+import scala.collection.mutable.ListBuffer
+
+import akka.actor.Actor
+import akka.actor.Props
+import akka.actor.ActorRef
+
+/**
+ * CatalogueIndexer is indexing worker that takes work from
+ * IndexingSupervisor and informs it after the work is complete
+ */
+class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor {
   import protocols._
+  import context.dispatcher
 
   val converter = new CatalogueItemToDocument
 
-  def receive = {
-    case IndexCatalogue(catalogueItem) =>
-      val catalogueDocument = converter.convert(catalogueItem)
-      writer.addDocument(catalogueDocument)
-    case _ =>
+  /**
+   * inform supervisor that CatalogueIndexer has been created
+   */
+  override def preStart() = supervisor ! CatalogueIndexerCreated(self)
+
+  /**
+   * Message to let itself know that indexing is done
+   */
+  case object IndexingComplete
+
+  /**
+   * Function to index the CatalogueItem
+   */
+  def indexCatalogue(catalogueItems: List[CatalogueItem]) {
+    Future {
+      catalogueItems foreach { catalogueItem =>
+        Try {
+          val catalogueDocument = converter.convert(catalogueItem)
+          writer.addDocument(catalogueDocument)
+        } match {
+          case Failure(ex) => supervisor ! ErrorInIndexing(catalogueItem)
+          case _ =>
+        }
+      }
+      self ! IndexingComplete
+    }
   }
+
+  /**
+   * This is a state when CatalogueIndexer is in working state
+   */
+  def working: Receive = {
+    case CatalogueIsReady =>
+    case NoCatalogueToIndex =>
+    case IndexCatalogue(IndexingJob(jobId, catalogueItems)) =>
+    case IndexingComplete =>
+      supervisor ! IndexingDone(self)
+      supervisor ! RequestsCatalogue(self)
+      context.become(idle)
+  }
+
+  /**
+   * This is a state when CatalogueIndexer is idle
+   */
+  def idle: Receive = {
+    case CatalogueIsReady => supervisor ! RequestsCatalogue(self)
+    case NoCatalogueToIndex =>
+    case IndexCatalogue(IndexingJob(jobId, catalogueItems)) =>
+      context.become(working)
+      indexCatalogue(catalogueItems)
+  }
+
+  /**
+   * CatalogueIndexer is idle in the beginning
+   */
+  def receive = idle
+
+}
+
+/**
+ * Companion object to instantiate CatalogueIndexer
+ */
+object CatalogueIndexer {
+
+  def props(writer: IndexWriter, supervisor: ActorRef): Props = Props(new CatalogueIndexer(writer, supervisor))
 
 }

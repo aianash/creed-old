@@ -43,9 +43,9 @@ object IndexingServer {
     val connector = getConnector(settings)
     var consumer = system.actorOf(Props(classOf[CatalogueItemConsumer], connector))
 
-    consumer ! ReadNextCatalogueItem(10)
+    consumer ! ReadNextCatalogueBatch(10)
 
-    system.scheduler.schedule(0 milliseconds, 1 seconds, consumer, ReadNextCatalogueItem(10))
+    system.scheduler.schedule(0 milliseconds, 1 seconds, consumer, ReadNextCatalogueBatch(10))
   }
 
   /**
