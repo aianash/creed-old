@@ -28,12 +28,12 @@ object CreedBuild extends Build with Libraries {
     javaOptions += "-Xmx2500M",
 
     resolvers ++= Seq(
-      "ReaderDeck Releases" at "http://repo.readerdeck.com/artifactory/readerdeck-releases",
+      // "ReaderDeck Releases" at "http://repo.readerdeck.com/artifactory/readerdeck-releases",
       "anormcypher" at "http://repo.anormcypher.org/",
       "Akka Repository" at "http://repo.akka.io/releases",
       "Spray Repository" at "http://repo.spray.io/",
       "twitter-repo" at "http://maven.twttr.com",
-      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+      "Typesafe Repository releases" at "http://repo.typesafe.com/typesafe/releases/",
       "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository"
     ),
 
@@ -108,6 +108,8 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.scaldi
       ++ Libs.scaldiAkka
       ++ Libs.bijection
+      ++ Libs.lucene
+      ++ Libs.play
   ).dependsOn(core)
 
 }
