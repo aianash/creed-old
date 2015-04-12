@@ -17,5 +17,5 @@ case class ErrorInIndexing(catalogueItem: CatalogueItem)
 
 // message from IndexingSupervisor
 case class IndexCatalogue(job: IndexingJob) extends CatalogueIndexerMessage
-case object CatalogueIsReady extends CatalogueIndexerMessage
+case object AskForCatalogue extends CatalogueIndexerMessage
 case object NoCatalogueToIndex extends CatalogueIndexerMessage

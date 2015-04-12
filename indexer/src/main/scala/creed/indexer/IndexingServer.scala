@@ -3,6 +3,7 @@ package creed.indexer
 import kafka.consumer._
 
 import java.util.Properties
+import java.io.File
 
 import akka.actor.ActorSystem
 import akka.actor.Props
@@ -11,6 +12,8 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.typesafe.config.{Config, ConfigFactory}
+
+import org.apache.lucene.store.FSDirectory
 
 /**
  * Main class to start indexing server.
@@ -37,15 +40,14 @@ object IndexingServer {
 
   def main(args: Array[String]) {
 
-    val config = ConfigFactory.load("onyx")
-    val system = ActorSystem(config.getString("onyx.catalogue.actorSystem"), config)
-    val settings = OnyxSettings(system)
-    val connector = getConnector(settings)
-    var consumer = system.actorOf(Props(classOf[CatalogueItemConsumer], connector))
+    val config     = ConfigFactory.load("onyx")
+    val system     = ActorSystem(config.getString("onyx.catalogue.actorSystem"), config)
+    val settings   = OnyxSettings(system)
+    val connector  = getConnector(settings)
+    val consumer   = system.actorOf(Props(classOf[CatalogueItemConsumer], connector))
+    var indexDir   = FSDirectory.open(new File(settings.IndexDirectory), null)
+    val supervisor = system.actorOf(Props(classOf[IndexingSupervisor], consumer, indexDir))
 
-    consumer ! ReadNextCatalogueBatch(10)
-
-    system.scheduler.schedule(0 milliseconds, 1 seconds, consumer, ReadNextCatalogueBatch(10))
   }
 
   /**

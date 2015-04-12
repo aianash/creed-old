@@ -13,7 +13,7 @@ import scala.collection.mutable.{Queue, Map}
 import scala.util.Sorting
 
 import org.apache.lucene.index._
-import org.apache.lucene.store.Directory
+import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 
@@ -30,7 +30,7 @@ case class IndexingJob(jobId: IndexingJobId, catalogueItems: List[CatalogueItem]
 /**
  * Indexing Supervisor
  */
-class IndexingSupervisor(consumer: ActorRef, indexDir: Directory) extends Actor with ActorLogging {
+class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Actor with ActorLogging {
 
   import IndexingSupervisor._
   import protocols._
@@ -55,6 +55,11 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: Directory) extends Actor 
   // retries
   val retryQueue = Queue.empty[CatalogueItem]
 
+  // instantiate the CatalogueIndexer
+  (0 to settings.IndexerCount).foreach { _ =>
+    val indexer = context.actorOf(CatalogueIndexer.props(writer, self))
+    context.watch(indexer)
+  }
 
 
   def receive = {

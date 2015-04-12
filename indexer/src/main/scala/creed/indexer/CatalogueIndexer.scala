@@ -5,6 +5,7 @@ import org.apache.lucene.index._
 import creed.core._
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.{Try, Success, Failure}
 import scala.collection.mutable.ListBuffer
 
@@ -25,7 +26,10 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
   /**
    * inform supervisor that CatalogueIndexer has been created
    */
-  override def preStart() = supervisor ! CatalogueIndexerCreated(self)
+  override def preStart() {
+    supervisor ! CatalogueIndexerCreated(self)
+    context.system.scheduler.scheduleOnce(50 milliseconds, supervisor, RequestsCatalogue)
+  }
 
   /**
    * Message to let itself know that indexing is done
@@ -54,7 +58,7 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
    * This is a state when CatalogueIndexer is in working state
    */
   def working: Receive = {
-    case CatalogueIsReady =>
+    case AskForCatalogue =>
     case NoCatalogueToIndex =>
     case IndexCatalogue(IndexingJob(jobId, catalogueItems)) =>
     case IndexingComplete =>
@@ -67,7 +71,7 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
    * This is a state when CatalogueIndexer is idle
    */
   def idle: Receive = {
-    case CatalogueIsReady => supervisor ! RequestsCatalogue(self)
+    case AskForCatalogue => supervisor ! RequestsCatalogue(self)
     case NoCatalogueToIndex =>
     case IndexCatalogue(IndexingJob(jobId, catalogueItems)) =>
       context.become(working)
@@ -86,6 +90,6 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
  */
 object CatalogueIndexer {
 
-  def props(writer: IndexWriter, supervisor: ActorRef): Props = Props(new CatalogueIndexer(writer, supervisor))
+  def props(writer: IndexWriter, supervisor: ActorRef): Props = Props(classOf[CatalogueIndexer], writer, supervisor)
 
 }

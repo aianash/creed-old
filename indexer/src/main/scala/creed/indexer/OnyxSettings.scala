@@ -16,13 +16,15 @@ class OnyxSettings(cfg: Config) extends Extension {
     config
   }
 
-  val GroupId = config.getString("onyx.catalogue.kafka.group-id")
-  val ZookeeperConnect = config.getString("onyx.catalogue.kafka.zookeeper-connect")
-  val AutoOffsetReset = config.getString("onyx.catalogue.kafka.auto-offset-reset")
-  val ConsumerTimoutMs = config.getString("onyx.catalogue.kafka.consumer-timeout-ms")
-  val ActorSystem = config.getString("onyx.catalogue.actorSystem")
+  val GroupId                     = config.getString("onyx.catalogue.kafka.group-id")
+  val ZookeeperConnect            = config.getString("onyx.catalogue.kafka.zookeeper-connect")
+  val AutoOffsetReset             = config.getString("onyx.catalogue.kafka.auto-offset-reset")
+  val ConsumerTimoutMs            = config.getString("onyx.catalogue.kafka.consumer-timeout-ms")
+  val ActorSystem                 = config.getString("onyx.catalogue.actorSystem")
   val IndexSchedulingBackoffLimit = config.getInt("onyx.catalogue.indexer.backoff-limit")
-  val IndexingBatchSize = config.getInt("onyx.catalogue.indexer.batch-size")
+  val IndexingBatchSize           = config.getInt("onyx.catalogue.indexer.batch-size")
+  val IndexDirectory              = config.getString("onyx.catalogue.indexer.index-directory")
+  val IndexerCount                = config.getInt("onyx.catalogue.indexer.num-of-indexers")
 
 }
 

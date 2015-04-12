@@ -1,6 +1,7 @@
 package creed.service
 
 import akka.actor.{Actor, Props}
+import akka.routing.RoundRobinPool
 
 import org.apache.lucene.search._
 import org.apache.lucene.index.Term
@@ -10,6 +11,10 @@ import play.api.libs.json._
 import com.goshoplane.creed.search._
 import com.goshoplane.common._
 
+/**
+ * Actor to handle search requests
+ * Takes IndexSearcher while constuction
+ */
 class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
 
   import creed.service.protocols._
@@ -29,7 +34,10 @@ class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
       }
   }
 
-  private def getQuery(request: CatalogueSearchRequest) = {
+  /**
+   * Function to generate query given CatalogueSearchRequest
+   */
+  private def getQuery(request: CatalogueSearchRequest): BooleanQuery = {
     val booleanQuery = new BooleanQuery();
     request.query.params.foreach(param => {
       val paramJson = (param._2.json.map(Json.parse(_))) orElse (param._2.value.map(Json.toJson(_)))
@@ -40,8 +48,11 @@ class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
 
 }
 
+/**
+ * CatalogueSearcher companion object
+ */
 object CatalogueSearcher {
 
-  def props(searcher: IndexSearcher) = Props(new CatalogueSearcher(searcher))
+  def props(searcher: IndexSearcher): Props = RoundRobinPool(5).props(Props(classOf[CatalogueSearcher], searcher))
 
 }
