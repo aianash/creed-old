@@ -93,7 +93,10 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
    * Schedules new indexing job
    */
   private def scheduleNextJob: Future[Boolean] = {
-    getCatalogueBatch flatMap { batch =>
+    val catalogueBatchF = getCatalogueBatch map {
+      case NextBatch(batch) => batch
+    }
+    catalogueBatchF flatMap { batch =>
       if(batch.isEmpty && !requests.isEmpty) {
         backOffScheduling
         Future {true}
@@ -113,8 +116,9 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
 
   private def backOffScheduling = {
     if(currentBackoffIter > settings.IndexSchedulingBackoffLimit) currentBackoffIter = 0
-    currentBackoffIter += 1;
-    (Math.pow(2, currentBackoffIter) - 1 ) / 2
+    currentBackoffIter += 1
+    val interval = (Math.pow(2, currentBackoffIter) - 1 ) / 2
+    context.system.scheduler.scheduleOnce(interval milliseconds, self, CheckAndScheduleJob)
   }
 
   /**
@@ -130,7 +134,7 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
       Future.successful(batch)
     } else {
       implicit val timeout = Timeout(5 seconds)
-      val catalogueItemsF = (consumer ? ReadNextCatalogueBatch(batchSize)).mapTo[List[CatalogueItem]]
+      val catalogueItemsF = (consumer ? ReadNextCatalogueBatch(batchSize)).mapTo[NextBatch]
       catalogueItemsF
     }
   }

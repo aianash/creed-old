@@ -28,7 +28,7 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
    */
   override def preStart() {
     supervisor ! CatalogueIndexerCreated(self)
-    context.system.scheduler.scheduleOnce(50 milliseconds, supervisor, RequestsCatalogue)
+    context.system.scheduler.scheduleOnce(500 milliseconds, supervisor, RequestsCatalogue(self))
   }
 
   /**
