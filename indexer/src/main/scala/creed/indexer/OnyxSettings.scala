@@ -25,6 +25,8 @@ class OnyxSettings(cfg: Config) extends Extension {
   val IndexingBatchSize           = config.getInt("onyx.catalogue.indexer.batch-size")
   val IndexDirectory              = config.getString("onyx.catalogue.indexer.index-directory")
   val IndexerCount                = config.getInt("onyx.catalogue.indexer.num-of-indexers")
+  val MaxBufferedDocs             = config.getInt("onyx.catalogue.indexer.max-buffered-docs")
+  val MaxRAMBufferSize            = config.getDouble("onyx.catalogue.indexer.max-ram-buffer-size")
 
 }
 

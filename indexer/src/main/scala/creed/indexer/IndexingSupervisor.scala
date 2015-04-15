@@ -38,8 +38,10 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
 
   val settings = OnyxSettings(context.system)
 
-  val analyzer = new StandardAnalyzer(Version.LUCENE_48);
-  val config   = new IndexWriterConfig(Version.LUCENE_48, analyzer);
+  val analyzer = new StandardAnalyzer(Version.LUCENE_48)
+  val config   = new IndexWriterConfig(Version.LUCENE_48, analyzer)
+  config.setMaxBufferedDocs(settings.MaxBufferedDocs)
+  config.setRAMBufferSizeMB(settings.MaxRAMBufferSize)
   val writer   = new IndexWriter(indexDir, config)
 
   val batchSize = settings.IndexingBatchSize
