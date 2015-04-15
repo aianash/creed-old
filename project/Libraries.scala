@@ -8,47 +8,55 @@ import Keys._
  */
 trait Libraries {
   object Version {
-    val scala           = "2.10.4"
-    val lucene          = "4.8.0"
-    val akka            = "2.3.6"
-    val scalaz          = "7.0.6"
-    val graphstream     = "1.2"
-    val fastutil        = "6.5.15"
-    val argonaut        = "6.0.4"
-    val neo4j           = "2.0.3"
-    val stanfordCoreNlp = "3.3.1"
-    val factorie        = "1.0"
-    val twitterUtil     = "6.22.2"
-    val finagle         = "6.22.0"
-    val slf4j           = "1.7.6"
-    val scallop         = "0.9.4"
-    val stringmetric    = "0.25.3"
-    val mimepull        = "1.9.3"
-    val commonsLang     = "2.6"
-    val provoz          = "0.0.1"
-    val hemingway       = "1.0.0"
-    val libThrift       = "0.8.0" // [check update to] 0.9.1
-    val bijection       = "0.6.2"
-    val scrooge         = "3.17.0"
-    val commonsConfig   = "1.9"
-    val guava           = "15.0"
-    val wikiparser      = "1.0.0"
-    val scalaGraph      = "1.8.0"
-    val msgpack         = "0.6.8"
-    val jsoup           = "1.7.3"
-    val commonsCompress = "1.6"
-    val clearnlp        = "2.0.2"
-    val logback         = "1.1.2"
-    val scaldi          = "0.3.2"
-    val storehaus       = "0.9.0"
-    val retry           = "0.2.0"
-    val odelay          = "0.1.0"
+    val scala               = "2.10.4"
+    val lucene              = "4.8.0"
+    val akka                = "2.3.6"
+    val scalaz              = "7.0.6"
+    val graphstream         = "1.2"
+    val fastutil            = "6.5.15"
+    val argonaut            = "6.0.4"
+    val neo4j               = "2.0.3"
+    val stanfordCoreNlp     = "3.3.1"
+    val factorie            = "1.0"
+    val twitterUtil         = "6.22.2"
+    val finagle             = "6.22.0"
+    val slf4j               = "1.7.6"
+    val scallop             = "0.9.4"
+    val stringmetric        = "0.25.3"
+    val mimepull            = "1.9.3"
+    val commonsLang         = "2.6"
+    val provoz              = "0.0.1"
+    val hemingway           = "1.0.0"
+    val libThrift           = "0.8.0" // [check update to] 0.9.1
+    val bijection           = "0.6.2"
+    val scrooge             = "3.17.0"
+    val commonsConfig       = "1.9"
+    val guava               = "15.0"
+    val wikiparser          = "1.0.0"
+    val scalaGraph          = "1.8.0"
+    val msgpack             = "0.6.8"
+    val jsoup               = "1.7.3"
+    val commonsCompress     = "1.6"
+    val clearnlp            = "2.0.2"
+    val logback             = "1.1.2"
+    val scaldi              = "0.3.2"
+    val storehaus           = "0.9.0"
+    val retry               = "0.2.0"
+    val odelay              = "0.1.0"
     val researchpaperParser = "1.0"
+    val kafka               = "0.8.2.0"
+    val play                = "2.3.8"
   }
 
 
 
   object Libs {
+
+    val play = Seq(
+      "com.typesafe.play" %% "play" % Version.play)
+
+    val kafka = Seq (
+      "org.apache.kafka" %% "kafka" % Version.kafka)
 
     val factorie = Seq (
       "cc.factorie" % "factorie" % Version.factorie)

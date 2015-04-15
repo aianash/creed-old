@@ -4,6 +4,8 @@ namespace java com.goshoplane.creed.search
 namespace js neutrino.search
 
 typedef string JSON
+typedef i32 PageIndex
+typedef i32 PageSize
 
 struct CreedScore {
   1: double value;
@@ -35,7 +37,14 @@ struct CatalogueSearchQuery {
   2: string queryText;
 }
 
-struct CatalogueSearchRequest {
+struct CatalogueSearchId {
   1: common.UserId userId;
+  2: i64 sruid;
+}
+
+struct CatalogueSearchRequest {
+  1: CatalogueSearchId searchId;
   2: CatalogueSearchQuery query;
+  3: PageIndex pageIndex;
+  4: PageSize pageSize;
 }

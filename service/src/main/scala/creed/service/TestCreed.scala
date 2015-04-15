@@ -13,8 +13,9 @@ object TestCreed {
 
     val client = Thrift.newIface[Creed.FutureIface]("127.0.0.1:1601")
     val userId = UserId(1L)
+    val seachId = CatalogueSearchId(userId, 1)
     val query = CatalogueSearchQuery(queryText = "search")
-    val f = client.searchCatalogue(CatalogueSearchRequest(userId, query))
+    val f = client.searchCatalogue(CatalogueSearchRequest(seachId, query, 1, 1))
 
     Await.ready(f)
 

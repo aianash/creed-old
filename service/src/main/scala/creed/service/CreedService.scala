@@ -13,10 +13,9 @@ import com.goshoplane.creed.service._
 import scaldi.Injector
 import scaldi.akka.AkkaInjectable._
 
-
 class CreedService(implicit inj: Injector) extends Creed[TwitterFuture] {
   def searchCatalogue(searchRequest: CatalogueSearchRequest) = {
-    TwitterFuture.value(CatalogueSearchResults(searchRequest.userId))
+    TwitterFuture.value(CatalogueSearchResults(searchRequest.searchId.userId))
   }
 }
 
