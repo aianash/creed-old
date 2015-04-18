@@ -11,13 +11,15 @@ import goshoplane.commons.catalogue._
 
 class CatalogueItemToDocument {
 
-  private val itemIdField = new StringField("itemId", "", Field.Store.YES)
-  private val storeIdField = new StringField("storeId", "", Field.Store.YES)
-  private val colorField = new StringField("color", "", Field.Store.NO)
-  private val sizeField = new StringField("size", "", Field.Store.NO)
-  private val brandField = new StringField("brand", "", Field.Store.NO)
+  private val itemIdField       = new StringField("itemId", "", Field.Store.YES)
+  private val storeIdField      = new StringField("storeId", "", Field.Store.YES)
+  private val colorField        = new StringField("color", "", Field.Store.NO)
+  private val sizeField         = new StringField("size", "", Field.Store.NO)
+  private val brandField        = new StringField("brand", "", Field.Store.NO)
   private val clothingTypeField = new StringField("clothingType", "", Field.Store.NO)
-  private val descriptionField = new TextField("description", new StringReader(""))
+  private val productTitleField = new StringField("productTitle", "", Field.Store.NO)
+  private val namedTypeField    = new StringField("namedType", "", Field.Store.NO)
+  private val descriptionField  = new TextField("description", new StringReader(""))
 
   def convert(catalogueItem: CatalogueItem) =
     catalogueItem match {
@@ -28,6 +30,8 @@ class CatalogueItemToDocument {
         sizeField.setStringValue(sizes.values.foldLeft("") { _ + " " + _ })
         brandField.setStringValue(brand.name)
         descriptionField.setReaderValue(new StringReader(description.text))
+        productTitleField.setStringValue(productTitle.title)
+        namedTypeField.setStringValue(namedType.name)
 
         val document = new Document()
         document.add(itemIdField)
