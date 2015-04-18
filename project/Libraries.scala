@@ -46,11 +46,15 @@ trait Libraries {
     val researchpaperParser = "1.0"
     val kafka               = "0.8.2.0"
     val play                = "2.3.8"
+    val shoplaneCommons     = "0.0.1"
   }
 
 
 
   object Libs {
+
+    val shoplaneCommons = Seq(
+      "com.goshoplane" %% "commons-catalogue" % Version.shoplaneCommons)
 
     val play = Seq(
       "com.typesafe.play" %% "play" % Version.play)

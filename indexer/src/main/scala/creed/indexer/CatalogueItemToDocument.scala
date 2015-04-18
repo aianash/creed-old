@@ -7,6 +7,8 @@ import org.apache.lucene.document.Field._
 
 import java.io.StringReader
 
+import goshoplane.commons.catalogue._
+
 class CatalogueItemToDocument {
 
   private val itemIdField = new StringField("itemId", "", Field.Store.YES)
@@ -19,13 +21,12 @@ class CatalogueItemToDocument {
 
   def convert(catalogueItem: CatalogueItem) =
     catalogueItem match {
-      case ClothingItem(itemId, color, size, brand, clothingType, description) =>
+      case ClothingItem(itemId, itemType, itemTypeGroups, namedType, productTitle, colors, sizes, brand, description, price) =>
         itemIdField.setStringValue(itemId.cuid.toString)
         storeIdField.setStringValue(itemId.storeId.stuid.toString)
-        colorField.setStringValue(color.values.foldLeft("") { _ + " " + _ })
-        sizeField.setStringValue(size.values.foldLeft("") { _ + " " + _ })
+        colorField.setStringValue(colors.values.foldLeft("") { _ + " " + _ })
+        sizeField.setStringValue(sizes.values.foldLeft("") { _ + " " + _ })
         brandField.setStringValue(brand.name)
-        clothingTypeField.setStringValue(clothingType.value)
         descriptionField.setReaderValue(new StringReader(description.text))
 
         val document = new Document()

@@ -5,9 +5,12 @@ import scala.util.{Try, Success, Failure}
 import akka.actor.Actor
 
 import kafka.consumer._
-import kafka.serializer.DefaultDecoder
+import kafka.serializer.StringDecoder
 
 import creed.core._
+
+import goshoplane.commons.catalogue._
+import goshoplane.commons.catalogue.kafka.serializers._
 
 /**
  * Actor to get data from kafka in batch.
@@ -17,7 +20,7 @@ class CatalogueItemConsumer(connector: ConsumerConnector) extends Actor {
   import protocols._
 
   val filterSpec = new Whitelist("test")
-  val streams = connector.createMessageStreamsByFilter(filterSpec, 1, new DefaultDecoder(), new DefaultDecoder())
+  val streams = connector.createMessageStreamsByFilter(filterSpec, 1, new StringDecoder(), new SerializedCatalogueItemDecoder())
   val stream = streams(0)
   val iterator = stream.iterator()
 
@@ -40,7 +43,7 @@ class CatalogueItemConsumer(connector: ConsumerConnector) extends Actor {
       (0 to batchSize).foldLeft (List.empty[CatalogueItem]) { (batch, _) =>
 
         Try {iterator.next().message}
-          .map({serialized => Some(Catalogue.decode(serialized))})
+          .map({serialized => CatalogueItem.decode(serialized)})
           .recover {
             case _: ConsumerTimeoutException => None
           } match {

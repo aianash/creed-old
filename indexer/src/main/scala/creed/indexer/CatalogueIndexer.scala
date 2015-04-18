@@ -13,6 +13,8 @@ import akka.actor.Actor
 import akka.actor.Props
 import akka.actor.ActorRef
 
+import goshoplane.commons.catalogue._
+
 /**
  * CatalogueIndexer is indexing worker that takes work from
  * IndexingSupervisor and informs it after the work is complete

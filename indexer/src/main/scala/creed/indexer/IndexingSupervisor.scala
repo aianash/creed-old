@@ -17,6 +17,8 @@ import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 
+import goshoplane.commons.catalogue._
+
 /**
  * Indexing job ID
  */

@@ -87,6 +87,7 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.scaldiAkka
       ++ Libs.bijection
       ++ Libs.kafka
+      ++ Libs.shoplaneCommons
   ).dependsOn(core)
 
   lazy val service = Project(
@@ -110,6 +111,7 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.bijection
       ++ Libs.lucene
       ++ Libs.play
+      ++ Libs.shoplaneCommons
   ).dependsOn(core)
 
 }
