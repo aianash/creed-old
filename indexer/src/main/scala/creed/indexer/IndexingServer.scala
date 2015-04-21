@@ -7,13 +7,18 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.actor.Props
+import akka.actor.PoisonPill
+import akka.pattern.ask
+import akka.util.Timeout
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
 
 import com.typesafe.config.{Config, ConfigFactory}
 
 import org.apache.lucene.store.FSDirectory
+
 
 /**
  * Main class to start indexing server.
@@ -47,6 +52,11 @@ object IndexingServer {
     val consumer   = system.actorOf(Props(classOf[CatalogueItemConsumer], connector))
     var indexDir   = FSDirectory.open(new File(settings.IndexDirectory), null)
     val supervisor = system.actorOf(Props(classOf[IndexingSupervisor], consumer, indexDir))
+
+    scala.sys.addShutdownHook {
+      val waitF = supervisor ? PoisonPill
+      Await.result(waitF, 5 seconds)
+    }
 
   }
 
