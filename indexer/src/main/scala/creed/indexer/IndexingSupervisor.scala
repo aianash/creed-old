@@ -143,6 +143,10 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
     }
   }
 
+  /**
+   * override postStop method
+   * close the index writer
+   */
   override def postStop() {
     writer.close()
   }

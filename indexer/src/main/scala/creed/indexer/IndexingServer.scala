@@ -54,8 +54,8 @@ object IndexingServer {
     val supervisor = system.actorOf(Props(classOf[IndexingSupervisor], consumer, indexDir))
 
     scala.sys.addShutdownHook {
-      val waitF = supervisor ? PoisonPill
-      Await.result(waitF, 5 seconds)
+      system.shutdown
+      system.awaitTermination
     }
 
   }
