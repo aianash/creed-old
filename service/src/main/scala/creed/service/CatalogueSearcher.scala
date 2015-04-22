@@ -17,21 +17,24 @@ import com.goshoplane.common._
  */
 class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
 
-  import creed.service.protocols._
+  import protocols._
 
   def receive = {
     case SearchCatalogue(request) =>
       val booleanQuery = getQuery(request)
       val collector = TopScoreDocCollector.create(100, true)
       val startIndex = (request.pageIndex - 1) * request.pageSize
-      val results = searcher.search(booleanQuery, collector)
+
+      searcher.search(booleanQuery, collector)
       val hits = collector.topDocs(startIndex, request.pageSize).scoreDocs
+
       hits.foldLeft (List.empty[CatalogueResultEntry]) { (topDocs, hit) =>
         val doc = searcher.doc(hit.doc)
-        val itemId = CatalogueItemId(doc.get("itemId").toLong, StoreId(doc.get("storeId").toLong, StoreType(2)))
+        val itemId = CatalogueItemId(StoreId(doc.get("storeId").toLong), doc.get("itemId").toLong)
         val resultEntry = CatalogueResultEntry(itemId, CreedScore(hit.score))
         resultEntry :: topDocs
       }
+      sender() ! CatalogueSearchResults(request.searchId, searchResults)
   }
 
   /**

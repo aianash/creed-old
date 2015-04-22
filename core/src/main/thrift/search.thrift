@@ -7,8 +7,17 @@ typedef string JSON
 typedef i32 PageIndex
 typedef i32 PageSize
 
+exception CreedException {
+  1: string message;
+}
+
 struct CreedScore {
   1: double value;
+}
+
+struct CatalogueSearchId {
+  1: common.UserId userId;
+  2: i64 sruid;
 }
 
 struct CatalogueResultEntry {
@@ -17,7 +26,7 @@ struct CatalogueResultEntry {
 }
 
 struct CatalogueSearchResults {
-  1: common.UserId userId;
+  1: CatalogueSearchId searchId;
   2: list<CatalogueResultEntry> results;
 }
 
@@ -35,11 +44,6 @@ struct QueryParam {
 struct CatalogueSearchQuery {
   1: map<string, QueryParam> params;
   2: string queryText;
-}
-
-struct CatalogueSearchId {
-  1: common.UserId userId;
-  2: i64 sruid;
 }
 
 struct CatalogueSearchRequest {
