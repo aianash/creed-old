@@ -16,9 +16,11 @@ class CreedSettings(cfg: Config) extends Extension {
     config
   }
 
-  val ActorSystem = config.getString("creed.actorSystem")
-  val CreedEndpoint = config.getString("creed.host") + ":" + config.getInt("creed.port")
+  val ActorSystem     = config.getString("creed.actorSystem")
+  val CreedEndpoint   = config.getString("creed.host") + ":" + config.getInt("creed.port")
   val SearchDirectory = config.getString("creed.searchDirectory")
+  val ServiceName     = config.getString("creed.service-name")
+  val CreedPort       = config.getInt("creed.port")
 
 }
 

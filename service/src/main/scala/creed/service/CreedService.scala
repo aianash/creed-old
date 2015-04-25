@@ -8,6 +8,8 @@ import com.twitter.util.{Future => TwitterFuture}
 import com.twitter.bijection._, twitter_util.UtilBijections._
 import com.twitter.bijection.Conversion.asMethod
 import com.twitter.finagle.Thrift
+import com.twitter.finagle.builder.ServerBuilder
+import com.twitter.finagle.thrift.ThriftServerFramedCodec
 
 import akka.actor.ActorSystem
 import akka.actor.Props
@@ -19,6 +21,10 @@ import com.goshoplane.creed.service._
 
 import scaldi.Injector
 import scaldi.akka.AkkaInjectable._
+
+import org.apache.thrift.protocol.TBinaryProtocol
+
+import java.net.InetSocketAddress
 
 
 class CreedService(implicit inj: Injector) extends Creed[TwitterFuture] {
@@ -34,6 +40,7 @@ class CreedService(implicit inj: Injector) extends Creed[TwitterFuture] {
     val searchResultsF = (supervisor ? SearchCatalogue(searchRequest)).mapTo[CatalogueSearchResults]
     awaitResult(searchResultsF, 500 milliseconds, {
       case NonFatal(ex) =>
+        println(ex.getStackTrace)
         TFailure(CreedException("Error while getting search results"))
     })
   }
@@ -50,6 +57,15 @@ class CreedService(implicit inj: Injector) extends Creed[TwitterFuture] {
 object CreedService {
   def start(implicit inj: Injector) = {
     val settings = CreedSettings(inject [ActorSystem])
-    Thrift.serveIface(settings.CreedEndpoint, inject [CreedService])
+
+    val protocol = new TBinaryProtocol.Factory()
+    val service  = new Creed$FinagleService(inject [CreedService], protocol)
+    val address  = new InetSocketAddress(settings.CreedPort)
+
+    ServerBuilder()
+      .codec(ThriftServerFramedCodec())
+      .name(settings.ServiceName)
+      .bindTo(address)
+      .build(service)
   }
 }

@@ -22,7 +22,8 @@ class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
   def receive = {
     case SearchCatalogue(request) =>
       val booleanQuery = getQuery(request)
-      val collector = TopScoreDocCollector.create(100, true)
+      val numHits = request.pageIndex * request.pageSize
+      val collector = TopScoreDocCollector.create(numHits, true)
       val startIndex = (request.pageIndex - 1) * request.pageSize
 
       searcher.search(booleanQuery, collector)
@@ -47,6 +48,7 @@ class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
       val paramJson = (param._2.json.map(Json.parse(_))) orElse (param._2.value.map(Json.toJson(_)))
       paramJson.map(CatalogueQueryBuilder.build(param._1, _)) foreach(query => booleanQuery.add(query, BooleanClause.Occur.SHOULD))
     })
+    booleanQuery.add(CatalogueQueryBuilder.build("description", Json.toJson(request.query.queryText)), BooleanClause.Occur.SHOULD)
     booleanQuery
   }
 
