@@ -37,3 +37,6 @@ dictionaryDb*
 
 # ds store (for mac)
 .DS_Store
+
+# index directory
+IndexDir
