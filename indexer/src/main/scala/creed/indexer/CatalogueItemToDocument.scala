@@ -23,7 +23,7 @@ class CatalogueItemToDocument {
 
   def convert(catalogueItem: CatalogueItem) =
     catalogueItem match {
-      case ClothingItem(itemId, itemType, itemTypeGroups, namedType, productTitle, colors, sizes, brand, description, price) =>
+      case ClothingItem(itemId, itemType, itemTypeGroups, namedType, productTitle, productImage, colors, sizes, brand, description, price, fabric, fit, style) =>
         itemIdField.setStringValue(itemId.cuid.toString)
         storeIdField.setStringValue(itemId.storeId.stuid.toString)
         colorField.setStringValue(colors.values.foldLeft("") { _ + " " + _ })

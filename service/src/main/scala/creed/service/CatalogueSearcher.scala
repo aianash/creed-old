@@ -28,12 +28,13 @@ class CatalogueSearcher(searcher: IndexSearcher) extends Actor {
       searcher.search(booleanQuery, collector)
       val hits = collector.topDocs(startIndex, request.pageSize).scoreDocs
 
-      hits.foldLeft (List.empty[CatalogueResultEntry]) { (topDocs, hit) =>
-        val doc = searcher.doc(hit.doc)
-        val itemId = CatalogueItemId(StoreId(doc.get("storeId").toLong), doc.get("itemId").toLong)
-        val resultEntry = CatalogueResultEntry(itemId, CreedScore(hit.score))
-        resultEntry :: topDocs
-      }
+      val searchResults =
+        hits.foldLeft (List.empty[CatalogueResultEntry]) { (topDocs, hit) =>
+          val doc = searcher.doc(hit.doc)
+          val itemId = CatalogueItemId(StoreId(doc.get("storeId").toLong), doc.get("itemId").toLong)
+          val resultEntry = CatalogueResultEntry(itemId, CreedScore(hit.score))
+          resultEntry :: topDocs
+        }
       sender() ! CatalogueSearchResults(request.searchId, searchResults)
   }
 

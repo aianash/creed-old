@@ -18,11 +18,11 @@ import goshoplane.commons.catalogue.kafka.serializers._
 class CatalogueItemConsumer(connector: ConsumerConnector) extends Actor {
 
   import protocols._
-
-  val filterSpec = new Whitelist("test")
-  val streams = connector.createMessageStreamsByFilter(filterSpec, 1, new StringDecoder(), new SerializedCatalogueItemDecoder())
-  val stream = streams(0)
-  val iterator = stream.iterator()
+  val settings   = OnyxSettings(context.system)
+  val filterSpec = new Whitelist(settings.IndexingTopic)
+  val streams    = connector.createMessageStreamsByFilter(filterSpec, 1, new StringDecoder(), new SerializedCatalogueItemDecoder())
+  val stream     = streams(0)
+  val iterator   = stream.iterator()
 
   def receive = {
     case ReadNextCatalogueBatch(batchSize) =>
