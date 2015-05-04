@@ -3,7 +3,6 @@ package creed.indexer
 import kafka.consumer._
 
 import java.util.Properties
-import java.io.File
 
 import akka.actor.ActorSystem
 import akka.actor.Props
@@ -50,8 +49,7 @@ object IndexingServer {
     val settings   = OnyxSettings(system)
     val connector  = getConnector(settings)
     val consumer   = system.actorOf(Props(classOf[CatalogueItemConsumer], connector))
-    var indexDir   = FSDirectory.open(new File(settings.IndexDirectory), null)
-    val supervisor = system.actorOf(Props(classOf[IndexingSupervisor], consumer, indexDir))
+    val supervisor = system.actorOf(Props(classOf[IndexingSupervisor], consumer))
 
     scala.sys.addShutdownHook {
       system.shutdown

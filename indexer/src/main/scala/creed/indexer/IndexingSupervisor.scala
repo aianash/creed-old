@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorRef, ActorLogging, Props, Terminated}
 import akka.pattern.ask
 import akka.util.Timeout
 
+import java.io.File
 import java.util.UUID
 
 import scala.concurrent._, duration._
@@ -16,6 +17,8 @@ import org.apache.lucene.index._
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.Analyzer
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 
 import goshoplane.commons.catalogue._
 
@@ -32,7 +35,7 @@ case class IndexingJob(jobId: IndexingJobId, catalogueItems: List[CatalogueItem]
 /**
  * Indexing Supervisor
  */
-class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Actor with ActorLogging {
+class IndexingSupervisor(consumer: ActorRef) extends Actor with ActorLogging {
 
   import IndexingSupervisor._
   import protocols._
@@ -40,8 +43,8 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
 
   val settings = OnyxSettings(context.system)
 
-  val analyzer = new StandardAnalyzer(Version.LUCENE_48)
-  val config   = new IndexWriterConfig(Version.LUCENE_48, analyzer)
+  var indexDir = FSDirectory.open(new File(settings.IndexDirectory), null)
+  val config   = new IndexWriterConfig(Version.LUCENE_48, getPerItemAnalyzerWrapper)
   config.setMaxBufferedDocs(settings.MaxBufferedDocs)
   config.setRAMBufferSizeMB(settings.MaxRAMBufferSize)
   val writer   = new IndexWriter(indexDir, config)
@@ -149,6 +152,22 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
    */
   override def postStop() {
     writer.close()
+  }
+
+  /**
+   * Function to get PerItemAnalyzerWrapper
+   * Uses analyzer specified in ClothingIndexFields
+   */
+  private def getPerItemAnalyzerWrapper = {
+    val analyzer = new StandardAnalyzer(Version.LUCENE_48)
+    val perFieldAnalyzer: java.util.Map[String, Analyzer] = new java.util.HashMap[String, Analyzer]
+
+    perFieldAnalyzer.put(ClothingIndexFields.ProductTitle.name, ClothingIndexFields.ProductTitle.analyzer.get)
+    perFieldAnalyzer.put(ClothingIndexFields.Description.name, ClothingIndexFields.Description.analyzer.get)
+    perFieldAnalyzer.put(ClothingIndexFields.Fabric.name, ClothingIndexFields.Fabric.analyzer.get)
+    perFieldAnalyzer.put(ClothingIndexFields.Fit.name, ClothingIndexFields.Fit.analyzer.get)
+    perFieldAnalyzer.put(ClothingIndexFields.Style.name, ClothingIndexFields.Style.analyzer.get)
+    new PerFieldAnalyzerWrapper(analyzer, perFieldAnalyzer)
   }
 
 }
