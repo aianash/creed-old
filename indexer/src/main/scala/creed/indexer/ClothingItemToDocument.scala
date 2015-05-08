@@ -33,7 +33,6 @@ class ClothingItemToDocument {
   private val descriptionField    = new TextField(ClothingIndexFields.Description.name, new StringReader(""))
 
   def apply(item: ClothingItem) = {
-    println("DEBUG: Inside ClothingItemToDocument::apply")
     itemIdField.setStringValue(item.itemId.cuid.toString)
     storeIdField.setStringValue(item.itemId.storeId.stuid.toString)
     brandField.setStringValue(item.brand.name)
