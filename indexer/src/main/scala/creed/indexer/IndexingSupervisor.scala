@@ -22,6 +22,8 @@ import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 
 import goshoplane.commons.catalogue._
 
+import creed.core.fields._
+
 /**
  * Indexing job ID
  */
@@ -43,8 +45,9 @@ class IndexingSupervisor(consumer: ActorRef) extends Actor with ActorLogging {
 
   val settings = OnyxSettings(context.system)
 
-  var indexDir = FSDirectory.open(new File(settings.IndexDirectory), null)
-  val config   = new IndexWriterConfig(Version.LUCENE_48, getPerItemAnalyzerWrapper)
+  val fields   = CatalogueItemFields[ClothingItem] get
+  val indexDir = FSDirectory.open(new File(settings.IndexDirectory), null)
+  val config   = new IndexWriterConfig(Version.LUCENE_48, fields.perFieldAnalyzer.left.get)
   config.setMaxBufferedDocs(settings.MaxBufferedDocs)
   config.setRAMBufferSizeMB(settings.MaxRAMBufferSize)
   val writer   = new IndexWriter(indexDir, config)
@@ -152,22 +155,6 @@ class IndexingSupervisor(consumer: ActorRef) extends Actor with ActorLogging {
    */
   override def postStop() {
     writer.close()
-  }
-
-  /**
-   * Function to get PerItemAnalyzerWrapper
-   * Uses analyzer specified in ClothingIndexFields
-   */
-  private def getPerItemAnalyzerWrapper = {
-    val analyzer = new StandardAnalyzer(Version.LUCENE_48)
-    val perFieldAnalyzer: java.util.Map[String, Analyzer] = new java.util.HashMap[String, Analyzer]
-
-    perFieldAnalyzer.put(ClothingIndexFields.ProductTitle.name, ClothingIndexFields.ProductTitle.analyzer.get)
-    perFieldAnalyzer.put(ClothingIndexFields.Description.name, ClothingIndexFields.Description.analyzer.get)
-    perFieldAnalyzer.put(ClothingIndexFields.Fabric.name, ClothingIndexFields.Fabric.analyzer.get)
-    perFieldAnalyzer.put(ClothingIndexFields.Fit.name, ClothingIndexFields.Fit.analyzer.get)
-    perFieldAnalyzer.put(ClothingIndexFields.Style.name, ClothingIndexFields.Style.analyzer.get)
-    new PerFieldAnalyzerWrapper(analyzer, perFieldAnalyzer)
   }
 
 }

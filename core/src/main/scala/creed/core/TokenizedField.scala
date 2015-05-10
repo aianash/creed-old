@@ -1,11 +1,11 @@
-package creed.indexer
+package creed.core
 
 import org.apache.lucene.document.Field
 import org.apache.lucene.document.Field._
 import org.apache.lucene.document.FieldType
 import org.apache.lucene.index.FieldInfo.IndexOptions
 
-class TokenizedField(name: String, value: String, stored: Store) extends Field(name, value, if(stored == Store.YES) TokenizedField.TYPE_STORED else TokenizedField.TYPE_NOT_STORED) {
+class TokenizedField(name: String, stored: Store) extends Field(name, if(stored == Store.YES) TokenizedField.TYPE_STORED else TokenizedField.TYPE_NOT_STORED) {
 
   def setTokens(tokens: Seq[String]) {
     super.setTokenStream(new ArrayTokenStream(tokens))

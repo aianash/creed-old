@@ -67,6 +67,9 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.libThrift
       ++ Libs.akka
       ++ Libs.scaldi
+      ++ Libs.shoplaneCommons
+      ++ Libs.lucene
+      ++ Libs.play
   )
 
   lazy val indexer = Project(
@@ -87,6 +90,7 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.scaldiAkka
       ++ Libs.bijection
       ++ Libs.kafka
+      ++ Libs.play
       ++ Libs.shoplaneCommons
   ).dependsOn(core)
 
@@ -112,6 +116,6 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.lucene
       ++ Libs.play
       ++ Libs.shoplaneCommons
-  ).dependsOn(core)
+  ).dependsOn(core, indexer)
 
 }
