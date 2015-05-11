@@ -14,6 +14,8 @@ import org.apache.lucene.document._, Field._
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 
+import creed.core.query._
+
 object CatalogueItemFields {
 
   def apply[T <: CatalogueItem : TypeTag] =
@@ -28,8 +30,8 @@ trait CatalogueItemFields[CI <: CatalogueItem] {
   def analyzer[T: TypeTag]: Either[Option[Analyzer], Exception]
   def perFieldAnalyzer: Either[PerFieldAnalyzerWrapper, Exception]
   def indexFieldName[T: TypeTag]: Either[String, Exception]
-  def indexField[T: TypeTag](attribute: T): Either[Field, Exception]
-  def query[T: TypeTag](param: Any): Either[Query, Exception]
+  def indexField[T](attribute: T): Either[Field, Exception]
+  def query(param: FieldQueryParams): Either[Query, Exception]
   def document(item: CI): Either[Document, Exception]
 
 }

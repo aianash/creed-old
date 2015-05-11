@@ -13,12 +13,14 @@ import com.goshoplane.common._
 
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.search._
+import org.apache.lucene.index.Term
 import org.apache.lucene.util.Version
 import org.apache.lucene.document._, Field._
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.tokenattributes._
 
-import creed.core._
+import creed.core._, query._
 
  
 class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
@@ -104,7 +106,7 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
       case _ => Right(FieldException(s"No index field name for field ${typeOf[T]}"))
     }
 
-  def indexField[T: TypeTag](attribute: T) = 
+  def indexField[T](attribute: T) =
     attribute match {
       case itemId: CatalogueItemId        => itemIdField.setStringValue(itemId.cuid.toString); Left(itemIdField)
       case storeId: StoreId               => storeIdField.setStringValue(storeId.stuid.toString); Left(storeIdField)
@@ -119,7 +121,7 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
       case fit: ApparelFit                => fitField.setStringValue(fit.fit); Left(fitField)
       case style: ApparelStyle            => styleField.setStringValue(style.style); Left(styleField)
       case fabric: ApparelFabric          => fabricField.setStringValue(fabric.fabric); Left(fabricField)
-      case _ => Right(FieldException(s"No index field for ${typeOf[T]}"))
+      case _ => Right(FieldException(s"No index field for ${attribute.getClass}"))
     }
 
   def document(item: ClothingItem) = {
@@ -156,10 +158,152 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
     }
   }
 
+  /**
+   * [param description]
+   * @type {[type]}
+   * @TODO remove repitition of code
+   */
+  def query(param: FieldQueryParams) =
+    param match {
+      case ColorsQueryParams(values) =>
+        for {
+          name <- indexFieldName[Colors].left
+        } yield {
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            query.add(new TermQuery(new Term(name, value)), BooleanClause.Occur.SHOULD)
+            query
+          }
+        }
 
-  def query[T: TypeTag](param: Any) =
-    typeOf[T] match {
-      case _ => Right(FieldException(s"No query for field for ${typeOf[T]}"))
+      case SizesQueryParams(values) =>
+        for {
+          name <- indexFieldName[Sizes].left
+        } yield {
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            query.add(new TermQuery(new Term(name, value)), BooleanClause.Occur.SHOULD)
+            query
+          }
+        }
+
+      case BrandQueryParams(values) =>
+        for {
+          name <- indexFieldName[Brand].left
+        } yield {
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            query.add(new TermQuery(new Term(name, value)), BooleanClause.Occur.SHOULD)
+            query
+          }
+        }
+
+      case FabricQueryParams(values) =>
+        for {
+          name <- indexFieldName[ApparelFabric].left
+          analyzer <- analyzer[ApparelFabric].left
+        } yield {
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            val tokenStream = analyzer.get.tokenStream(name, value)
+            val charTermAttr = tokenStream.addAttribute(classOf[CharTermAttribute])
+            while(tokenStream.incrementToken) {
+              query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+            }
+            query
+          }
+        }
+
+      case FitQueryParams(values) =>
+        for {
+          name <- indexFieldName[ApparelFit].left
+          analyzer <- analyzer[ApparelFit].left
+        } yield {
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            val tokenStream = analyzer.get.tokenStream(name, value)
+            val charTermAttr = tokenStream.addAttribute(classOf[CharTermAttribute])
+            while(tokenStream.incrementToken) {
+              query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+            }
+            query
+          }
+        }
+
+      case StyleQueryParams(values) =>
+        for {
+          name <- indexFieldName[ApparelStyle].left
+          analyzer <- analyzer[ApparelStyle].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${ApparelStyle.getClass}"))).left
+        } yield {
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            val tokenStream = analyzer.tokenStream(name, value)
+            val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
+            while(tokenStream.incrementToken) {
+              query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+            }
+            query
+          }
+        }
+
+      case PriceQueryParams(value) =>
+        for {
+          name <- indexFieldName[Price].left
+        } yield {
+          NumericRangeQuery.newFloatRange(name, value("min"), value("max"), true, true)
+        }
+
+      case DescriptionQueryParams(text) =>
+        for {
+          name <- indexFieldName[Description].left
+          analyzer <- analyzer[Description].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${Description.getClass}"))).left
+        } yield {
+          val query = new BooleanQuery
+          val tokenStream = analyzer.tokenStream(name, text)
+          val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
+          while(tokenStream.incrementToken) {
+            query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+          }
+          query
+        }
+
+      case ItemTypeGroupsQueryParams(text) =>
+        for {
+          name <- indexFieldName[ItemTypeGroups].left
+          analyzer <- analyzer[ItemTypeGroups].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${ItemTypeGroups.getClass}"))).left
+        } yield {
+          val query = new BooleanQuery
+          val tokenStream = analyzer.tokenStream(name, text)
+          val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
+          while(tokenStream.incrementToken) {
+            query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+          }
+          query
+        }
+
+      case NamedTypeQueryParams(text) =>
+        for {
+          name <- indexFieldName[NamedType].left
+          analyzer <- analyzer[NamedType].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${NamedType.getClass}"))).left
+        } yield {
+          val query = new BooleanQuery
+          val tokenStream = analyzer.tokenStream(name, text)
+          val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
+          while(tokenStream.incrementToken) {
+            query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+          }
+          query
+        }
+
+      case ProductTitleQueryField(text) =>
+        for {
+          name <- indexFieldName[ProductTitle].left
+          analyzer <- analyzer[ProductTitle].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${ProductTitle.getClass}"))).left
+        } yield {
+          val query = new BooleanQuery
+          val tokenStream = analyzer.tokenStream(name, text)
+          val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
+          while(tokenStream.incrementToken) {
+            query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+          }
+          query
+        }
+
+      case _ => Right(FieldException(s"No query for field for ${param.getClass}"))
     }
 
 }
