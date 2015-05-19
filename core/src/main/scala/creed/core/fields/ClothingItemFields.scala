@@ -203,9 +203,11 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
           values.foldLeft(new BooleanQuery) { (query, value) =>
             val tokenStream = analyzer.get.tokenStream(name, value)
             val charTermAttr = tokenStream.addAttribute(classOf[CharTermAttribute])
+            tokenStream.reset
             while(tokenStream.incrementToken) {
               query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
             }
+            tokenStream.close
             query
           }
         }
@@ -218,9 +220,11 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
           values.foldLeft(new BooleanQuery) { (query, value) =>
             val tokenStream = analyzer.get.tokenStream(name, value)
             val charTermAttr = tokenStream.addAttribute(classOf[CharTermAttribute])
+            tokenStream.reset
             while(tokenStream.incrementToken) {
               query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
             }
+            tokenStream.close
             query
           }
         }
@@ -233,9 +237,11 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
           values.foldLeft(new BooleanQuery) { (query, value) =>
             val tokenStream = analyzer.tokenStream(name, value)
             val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
+            tokenStream.reset
             while(tokenStream.incrementToken) {
               query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
             }
+            tokenStream.close
             query
           }
         }
@@ -254,25 +260,23 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
         } yield {
           val query = new BooleanQuery
           val tokenStream = analyzer.tokenStream(name, text)
+          tokenStream.reset
           val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
           while(tokenStream.incrementToken) {
             query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
           }
+          tokenStream.close
           query
         }
 
-      case ItemTypeGroupsQueryParams(text) =>
+      case ItemTypeGroupsQueryParams(values) =>
         for {
           name <- indexFieldName[ItemTypeGroups].left
-          analyzer <- analyzer[ItemTypeGroups].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${ItemTypeGroups.getClass}"))).left
         } yield {
-          val query = new BooleanQuery
-          val tokenStream = analyzer.tokenStream(name, text)
-          val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
-          while(tokenStream.incrementToken) {
-            query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
+          values.foldLeft(new BooleanQuery) { (query, value) =>
+            query.add(new TermQuery(new Term(name, value)), BooleanClause.Occur.SHOULD)
+            query
           }
-          query
         }
 
       case NamedTypeQueryParams(text) =>
@@ -282,24 +286,28 @@ class ClothingItemFields extends CatalogueItemFields[ClothingItem] {
         } yield {
           val query = new BooleanQuery
           val tokenStream = analyzer.tokenStream(name, text)
+          tokenStream.reset
           val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
           while(tokenStream.incrementToken) {
             query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
           }
+          tokenStream.close
           query
         }
 
-      case ProductTitleQueryField(text) =>
+      case ProductTitleQueryParams(text) =>
         for {
           name <- indexFieldName[ProductTitle].left
           analyzer <- analyzer[ProductTitle].left.flatMap(_.toLeft(FieldException(s"No analyzer found for ${ProductTitle.getClass}"))).left
         } yield {
           val query = new BooleanQuery
           val tokenStream = analyzer.tokenStream(name, text)
+          tokenStream.reset
           val charTermAttr = tokenStream.getAttribute(classOf[CharTermAttribute])
           while(tokenStream.incrementToken) {
             query.add(new TermQuery(new Term(name, charTermAttr.toString)), BooleanClause.Occur.SHOULD)
           }
+          tokenStream.close
           query
         }
 

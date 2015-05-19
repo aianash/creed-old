@@ -118,4 +118,26 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.shoplaneCommons
   ).dependsOn(core, indexer)
 
+  lazy val queryplanner = Project(
+    id = "creed-queryplanner",
+    base = file("queryplanner"),
+    settings = Project.defaultSettings ++
+      sharedSettings ++
+      SbtStartScript.startScriptForClassesSettings
+  ).settings(
+    name := "creed-queryplanner",
+
+    libraryDependencies ++= Seq(
+    ) ++ Libs.akka
+      ++ Libs.slf4j
+      ++ Libs.logback
+      ++ Libs.scalaJLine
+      ++ Libs.mimepull
+      ++ Libs.scaldi
+      ++ Libs.scaldiAkka
+      ++ Libs.bijection
+      ++ Libs.lucene
+      ++ Libs.play
+  ).dependsOn(core)
+
 }

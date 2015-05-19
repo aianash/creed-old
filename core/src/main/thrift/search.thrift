@@ -38,7 +38,9 @@ struct QueryParam {
   1: optional JSON json;
   2: optional binary stream;
   3: optional string value;
-  4: optional QueryParamWeight weight = {"value" : 1.0};
+  4: optional list<string> values;
+  5: optional map<string, string> queryMap;
+  6: optional QueryParamWeight weight = {"value" : 1.0};
 }
 
 struct CatalogueSearchQuery {
