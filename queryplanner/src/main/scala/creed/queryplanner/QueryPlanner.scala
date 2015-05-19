@@ -14,7 +14,7 @@ import com.goshoplane.creed.search._
 
 import creed.core._, fields._, query._
 
-class QueryPlanner {//} extends Actor {
+class QueryPlanner extends Actor {
 
   import protocols._
 
@@ -34,13 +34,13 @@ class QueryPlanner {//} extends Actor {
   val ProductTitleClass   = classOf[ProductTitle]
 
 
-  // def receive = {
+  def receive = {
 
-  //   case BuildQuery(request) => getQuery(request)
+    case BuildQuery(request) => getQuery(request)
 
-  //   case _ =>
+    case _ =>
 
-  // }
+  }
 
   def getQuery(request: CatalogueSearchRequest) = {
     val booleanQuery = new BooleanQuery
