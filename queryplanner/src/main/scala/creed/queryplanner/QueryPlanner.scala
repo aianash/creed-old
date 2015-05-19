@@ -36,7 +36,7 @@ class QueryPlanner extends Actor {
 
   def receive = {
 
-    case BuildQuery(request) => getQuery(request)
+    case BuildQuery(request) => sender() ! getQuery(request)
 
     case _ =>
 
@@ -51,7 +51,7 @@ class QueryPlanner extends Actor {
         queryParams <- getFieldQueryParams(paramValue).left
         query       <- fields.query(queryParams).left
       } yield {
-        booleanQuery.add(query, BooleanClause.Occur.MUST)
+        booleanQuery.add(query, BooleanClause.Occur.SHOULD)
       }
     })
 

@@ -116,7 +116,7 @@ object CreedBuild extends Build with Libraries {
       ++ Libs.lucene
       ++ Libs.play
       ++ Libs.shoplaneCommons
-  ).dependsOn(core, indexer)
+  ).dependsOn(core, indexer, queryplanner)
 
   lazy val queryplanner = Project(
     id = "creed-queryplanner",
