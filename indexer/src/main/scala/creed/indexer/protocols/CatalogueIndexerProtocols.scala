@@ -7,6 +7,8 @@ import scala.collection.mutable.ListBuffer
 
 import akka.actor.ActorRef
 
+import goshoplane.commons.catalogue._
+
 sealed trait CatalogueIndexerMessage extends Serializable
 
 // messages from CatalogueIndexer

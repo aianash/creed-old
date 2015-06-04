@@ -11,15 +11,15 @@ trait Libraries {
     val scala               = "2.10.4"
     val lucene              = "4.8.0"
     val akka                = "2.3.6"
-    val scalaz              = "7.0.6"
+    val scalaz              = "7.1.1"
     val graphstream         = "1.2"
     val fastutil            = "6.5.15"
     val argonaut            = "6.0.4"
     val neo4j               = "2.0.3"
     val stanfordCoreNlp     = "3.3.1"
     val factorie            = "1.0"
-    val twitterUtil         = "6.22.2"
-    val finagle             = "6.22.0"
+    val twitterUtil         = "6.23.0"
+    val finagle             = "6.24.0"
     val slf4j               = "1.7.6"
     val scallop             = "0.9.4"
     val stringmetric        = "0.25.3"
@@ -27,7 +27,7 @@ trait Libraries {
     val commonsLang         = "2.6"
     val provoz              = "0.0.1"
     val hemingway           = "1.0.0"
-    val libThrift           = "0.8.0" // [check update to] 0.9.1
+    val libThrift           = "0.9.2" // [check update to] 0.9.1
     val bijection           = "0.6.2"
     val scrooge             = "3.17.0"
     val commonsConfig       = "1.9"
@@ -46,11 +46,15 @@ trait Libraries {
     val researchpaperParser = "1.0"
     val kafka               = "0.8.2.0"
     val play                = "2.3.8"
+    val shoplaneCommons     = "0.0.1"
   }
 
 
 
   object Libs {
+
+    val shoplaneCommons = Seq(
+      "com.goshoplane" %% "commons-catalogue" % Version.shoplaneCommons)
 
     val play = Seq(
       "com.typesafe.play" %% "play" % Version.play)

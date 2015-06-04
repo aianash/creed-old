@@ -16,7 +16,7 @@ object CreedServer {
     implicit val appModule = new CreedServiceModule :: new ActorSystemModule(config)
 
     val service = CreedService.start
-    Await.ready(service)
+
   }
 
 }

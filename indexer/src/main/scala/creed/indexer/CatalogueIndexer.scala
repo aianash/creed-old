@@ -2,7 +2,7 @@ package creed.indexer
 
 import org.apache.lucene.index._
 
-import creed.core._
+import creed.core._, fields._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -13,6 +13,8 @@ import akka.actor.Actor
 import akka.actor.Props
 import akka.actor.ActorRef
 
+import goshoplane.commons.catalogue._
+
 /**
  * CatalogueIndexer is indexing worker that takes work from
  * IndexingSupervisor and informs it after the work is complete
@@ -21,7 +23,7 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
   import protocols._
   import context.dispatcher
 
-  val converter = new CatalogueItemToDocument
+  val fields   = CatalogueItemFields[ClothingItem] get
 
   /**
    * inform supervisor that CatalogueIndexer has been created
@@ -41,14 +43,15 @@ class CatalogueIndexer(writer: IndexWriter, supervisor: ActorRef) extends Actor 
    */
   def indexCatalogue(catalogueItems: List[CatalogueItem]) {
     Future {
-      catalogueItems foreach { catalogueItem =>
-        Try {
-          val catalogueDocument = converter.convert(catalogueItem)
-          writer.addDocument(catalogueDocument)
-        } match {
-          case Failure(ex) => supervisor ! ErrorInIndexing(catalogueItem)
-          case _ =>
-        }
+      catalogueItems foreach {
+        case item: ClothingItem =>
+          Try {
+            writer.addDocument(fields.document(item).left.get)
+          } match {
+            case Failure(ex) => supervisor ! ErrorInIndexing(item)
+            case _ =>
+          }
+        case _ =>
       }
       self ! IndexingComplete
     }

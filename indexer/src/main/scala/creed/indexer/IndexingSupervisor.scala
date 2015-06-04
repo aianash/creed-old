@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorRef, ActorLogging, Props, Terminated}
 import akka.pattern.ask
 import akka.util.Timeout
 
+import java.io.File
 import java.util.UUID
 
 import scala.concurrent._, duration._
@@ -16,6 +17,12 @@ import org.apache.lucene.index._
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.Analyzer
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
+
+import goshoplane.commons.catalogue._
+
+import creed.core.fields._
 
 /**
  * Indexing job ID
@@ -30,7 +37,7 @@ case class IndexingJob(jobId: IndexingJobId, catalogueItems: List[CatalogueItem]
 /**
  * Indexing Supervisor
  */
-class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Actor with ActorLogging {
+class IndexingSupervisor(consumer: ActorRef) extends Actor with ActorLogging {
 
   import IndexingSupervisor._
   import protocols._
@@ -38,8 +45,9 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
 
   val settings = OnyxSettings(context.system)
 
-  val analyzer = new StandardAnalyzer(Version.LUCENE_48)
-  val config   = new IndexWriterConfig(Version.LUCENE_48, analyzer)
+  val fields   = CatalogueItemFields[ClothingItem] get
+  val indexDir = FSDirectory.open(new File(settings.IndexDirectory), null)
+  val config   = new IndexWriterConfig(Version.LUCENE_48, fields.perFieldAnalyzer.left.get)
   config.setMaxBufferedDocs(settings.MaxBufferedDocs)
   config.setRAMBufferSizeMB(settings.MaxRAMBufferSize)
   val writer   = new IndexWriter(indexDir, config)
@@ -139,6 +147,14 @@ class IndexingSupervisor(consumer: ActorRef, indexDir: FSDirectory) extends Acto
       val catalogueItemsF = (consumer ? ReadNextCatalogueBatch(batchSize)).mapTo[NextBatch]
       catalogueItemsF
     }
+  }
+
+  /**
+   * override postStop method
+   * close the index writer
+   */
+  override def postStop() {
+    writer.close()
   }
 
 }
