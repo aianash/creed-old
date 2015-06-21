@@ -90,7 +90,6 @@ object CreedBuild extends Build with Libraries {
     name := "creed-indexer",
     mainClass in Compile := Some("creed.indexer.IndexingServer"),
 
-    dockerExposedPorts := Seq(1601),
     // TODO: remove echo statement once verified
     dockerEntrypoint := Seq("sh", "-c", "export ONYX_HOST=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'` && echo $ONYX_HOST && bin/creed-indexer $*"),
     dockerRepository := Some("docker"),
@@ -133,7 +132,7 @@ object CreedBuild extends Build with Libraries {
 
     dockerExposedPorts := Seq(1601),
     // TODO: remove echo statement once verified
-    dockerEntrypoint := Seq("sh", "-c", "export ONYX_HOST=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'` && echo $CREED_HOST && bin/creed-service $*"),
+    dockerEntrypoint := Seq("sh", "-c", "export CREED_HOST=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'` && echo $CREED_HOST && bin/creed-service $*"),
     dockerRepository := Some("docker"),
     dockerBaseImage := "phusion/baseimage",
     dockerCommands ++= Seq(
