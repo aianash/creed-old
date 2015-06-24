@@ -85,9 +85,27 @@ object CreedBuild extends Build with Libraries {
     settings = Project.defaultSettings ++
       sharedSettings
       // SbtStartScript.startScriptForClassesSettings
-  ).settings(
+  ).enablePlugins(JavaAppPackaging)
+  .settings(
     name := "creed-indexer",
+    mainClass in Compile := Some("creed.indexer.IndexingServer"),
 
+    // TODO: remove echo statement once verified
+    dockerEntrypoint := Seq("sh", "-c", "export ONYX_HOST=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'` && echo $ONYX_HOST && bin/creed-indexer $*"),
+    dockerRepository := Some("docker"),
+    dockerBaseImage := "phusion/baseimage",
+    dockerCommands ++= Seq(
+      Cmd("USER", "root"),
+      new CmdLike {
+        def makeContent = """|RUN \
+                             |  echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+                             |  add-apt-repository -y ppa:webupd8team/java && \
+                             |  apt-get update && \
+                             |  apt-get install -y oracle-java7-installer && \
+                             |  rm -rf /var/lib/apt/lists/* && \
+                             |  rm -rf /var/cache/oracle-jdk7-installer""".stripMargin
+      }
+    ),
     libraryDependencies ++= Seq(
     ) ++ Libs.lucene
       ++ Libs.akka
