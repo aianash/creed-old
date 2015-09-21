@@ -46,7 +46,7 @@ object CreedBuild extends Build with StandardLibraries {
     base = file("."),
     settings = Project.defaultSettings ++
       sharedSettings
-  ) aggregate (core, search)
+  ) aggregate (core, search, query)
 
 
 
@@ -59,8 +59,21 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-core",
 
     libraryDependencies ++= Seq(
-    )
+    ) ++ Libs.commonsCore
   )
+
+  lazy val query = Project(
+    id = "creed-query",
+    base = file("query"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).settings(
+    name := "creed-query",
+
+    libraryDependencies ++= Seq(
+    ) ++ Libs.lucene
+      ++ Libs.akka
+  ).dependsOn(core)
 
   lazy val search = Project(
     id = "creed-search",
@@ -79,6 +92,6 @@ object CreedBuild extends Build with StandardLibraries {
       ++ Libs.fastutil
       ++ Libs.slf4j
       ++ Libs.logback
-  ).dependsOn(core)
+  ).dependsOn(core, query)
 
 }

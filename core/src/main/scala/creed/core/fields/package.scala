@@ -1,6 +1,6 @@
-package creed.core
+// package creed.core
 
-package object fields {
+// package object fields {
 
-  case class FieldException(message: String) extends Exception(message)
-}
+//   case class FieldException(message: String) extends Exception(message)
+// }

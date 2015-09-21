@@ -1,14 +1,14 @@
-package creed.core
+// package creed.core
 
-import akka.actor.ActorSystem
+// import akka.actor.ActorSystem
 
-import scaldi.Module
-import scaldi.Injectable._
+// import scaldi.Module
+// import scaldi.Injectable._
 
-import com.typesafe.config.{Config, ConfigFactory}
+// import com.typesafe.config.{Config, ConfigFactory}
 
-package object injectors {
-  class ActorSystemModule(cfg: Config) extends Module {
-    bind [ActorSystem] to ActorSystem(cfg.getString("creed.actorSystem"), cfg)
-  }
-}
+// package object injectors {
+//   class ActorSystemModule(cfg: Config) extends Module {
+//     bind [ActorSystem] to ActorSystem(cfg.getString("creed.actorSystem"), cfg)
+//   }
+// }
