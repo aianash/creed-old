@@ -1,9 +1,12 @@
 package creed
 package search
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 
-import core.search.SearchId
+import java.util.concurrent.ConcurrentHashMap
+
+import core.search.SearchId, core.protocols._
 
 import akka.actor.{ActorLogging, Actor, Props, ActorRef, Terminated}
 import akka.pattern.pipe
@@ -27,8 +30,8 @@ class SearchScheduler(cassie: ActorRef) extends Actor with ActorLogging {
 
   val settings = SearchSettings(context.system)
 
-  val searchId2Executor = collection.mutable.HashMap.empty[SearchId, ActorRef]
-  val executors = collection.mutable.HashMap.empty[ActorRef, ExecutorMeta]
+  val searchId2Executor = new ConcurrentHashMap[SearchId, ActorRef]
+  val executors = new ConcurrentHashMap[ActorRef, ExecutorMeta]
 
   val cache       = context.actorOf(SearchCache.props, "cache")
 
@@ -63,16 +66,15 @@ class SearchScheduler(cassie: ActorRef) extends Actor with ActorLogging {
 
     case Terminated(executor) =>
       executors.get(executor) match {
-        case Some(meta) =>
+        case null =>
+        case meta =>
           import meta._
           log.info("Search job for u{}-sr{} executed in {}",
                     searchId.userId.uuid,
                     searchId.sruid,
                     job.executionTime)
-          executors -= executor
-          searchId2Executor -= searchId
-
-        case None =>
+          executors remove executor
+          searchId2Executor remove searchId
       }
 
   }
@@ -82,16 +84,16 @@ class SearchScheduler(cassie: ActorRef) extends Actor with ActorLogging {
     * job. can do better than this.
     */
   def run(job: SearchJob) = {
-    job.onResult { backchannel ! SendSearchResultFor(job.searchId, _) }
+    job.onResult { backchannel ! SendThruBackchannelFor(job.searchId, _) }
 
     searchId2Executor.get(job.searchId) match {
-      case Some(executor) => executor ! TerminateJobExecution(job.searchId)
-      case None =>
+      case null =>
+      case executor => executor ! TerminateJobExecution(job.searchId)
     }
     val executor = context.actorOf(SearchJobExecutor.props(job), job.id)
     context watch executor
-    executors += (executor -> ExecutorMeta(job.searchId, job))
-    searchId2Executor += (job.searchId -> executor)
+    executors.put(executor, ExecutorMeta(job.searchId, job))
+    searchId2Executor.put(job.searchId, executor)
   }
 
 }

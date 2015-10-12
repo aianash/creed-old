@@ -4,7 +4,6 @@ package search
 import scala.concurrent.Future
 import scala.collection.mutable.SortedSet
 
-import core._
 import core.search._
 import query.SearchContext
 
@@ -12,6 +11,8 @@ import akka.actor.{Props, Actor, ActorLogging}
 import akka.pattern.pipe
 
 import org.apache.lucene.search.{IndexSearcher, TopScoreDocCollector}
+
+import commons.catalogue._
 
 
 class Searcher(indxSearcher: IndexSearcher) extends Actor with ActorLogging {
@@ -30,20 +31,21 @@ class Searcher(indxSearcher: IndexSearcher) extends Actor with ActorLogging {
     * [TODO] Handle failure
     */
   def forkAndSearch(searchId: SearchId, searchContext: SearchContext) = Future {
-    val query = searchContext.query
-    val collector = TopScoreDocCollector.create(settings.SEARCH_RESULT_PAGE_SIZE)
-    indxSearcher.search(query, collector)
-    val hits = collector.topDocs().scoreDocs
+    RankedItemIds(searchId, itemScores = IndexedSeq(ItemScore(CatalogueItemId(123456L), 1.0f)))
+    // val query = searchContext.query
+    // val collector = TopScoreDocCollector.create(settings.SEARCH_RESULT_PAGE_SIZE)
+    // indxSearcher.search(query, collector)
+    // val hits = collector.topDocs().scoreDocs
 
-    val ordering = Ordering[(Float, Long)].on[ItemScore](x => (x.score, x.itemId.cuid))
-    val itemScores =
-      hits.foldLeft(SortedSet.empty[ItemScore](ordering)) { (result, hit) =>
-        val doc = indxSearcher.doc(hit.doc)
-        val itemId = CatalogueItemId(doc.get("cuid").toLong)
-        result += ItemScore(itemId, hit.score)
-      }
+    // val ordering = Ordering[(Float, Long)].on[ItemScore](x => (x.score, x.itemId.cuid))
+    // val itemScores =
+    //   hits.foldLeft(SortedSet.empty[ItemScore](ordering)) { (result, hit) =>
+    //     val doc = indxSearcher.doc(hit.doc)
+    //     val itemId = CatalogueItemId(doc.get("cuid").toLong)
+    //     result += ItemScore(itemId, hit.score)
+    //   }
 
-    RankedItemIds(searchId, itemScores = itemScores.toIndexedSeq)
+    // RankedItemIds(searchId, itemScores = itemScores.toIndexedSeq)
   }
 
 }

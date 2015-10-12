@@ -5,7 +5,9 @@ import scala.util.{Try, Success, Failure}
 
 import java.nio.file.FileSystems
 
-import core.cassie._
+import query._, query.protocols._
+import core._, cassie._
+import core.protocols._
 
 import akka.actor.{Props, Actor, ActorLogging, Status}
 import akka.util.Timeout
@@ -25,18 +27,19 @@ class SearchSupervisor extends Actor with ActorLogging {
 
   import goshoplane.commons.core.protocols.Implicits._
   import protocols._
-  import core.search.protocols._
   import query._, protocols._
+  import core.search._, core.search.protocols._
 
   import context.dispatcher
 
   val settings = SearchSettings(context.system)
 
-  val indxSearcher = {
-    val dir = FSDirectory.open(FileSystems.getDefault.getPath(settings.INDEX_DIR))
-    val reader = DirectoryReader.open(dir)
-    new IndexSearcher(reader)
-  }
+  val indxSearcher: IndexSearcher = null
+  //  {
+  //   val dir = FSDirectory.open(FileSystems.getDefault.getPath(settings.INDEX_DIR))
+  //   val reader = DirectoryReader.open(dir)
+  //   new IndexSearcher(reader)
+  // }
 
   val cassie         = context.actorOf(CassieClient.props, "cassie")
   val backchannel    = context.actorOf(SearchBackchannel.props, "backchannel")
@@ -58,7 +61,7 @@ class SearchSupervisor extends Actor with ActorLogging {
       */
     case UpdateQueryFor(searchId, query) =>
       queryProcessor ! ProcessQueryFor(searchId, query)
-      backchannel ! RegisterBackchannelFor(searchId, sender())
+      backchannel ! RegisterBackchannelFor(searchId, sender(), classOf[QueryRecommendationsFor], WaitFor(settings.MAX_WAIT_FOR_QUERY_RECOMMENDATION))
 
 
     /** Description of function
@@ -67,15 +70,11 @@ class SearchSupervisor extends Actor with ActorLogging {
       */
     case request @ GetSearchResultFor(searchId) =>
       implicit val timeout = settings.FETCH_SEARCH_CONTEXT_TIMEOUT
+      val replyTo = sender()
       for(searchContext <- queryProcessor ?= GetSearchContextFor(searchId)) {
         scheduler ! ScheduleSearchingFor(searchId, searchContext)
+        backchannel ! RegisterBackchannelFor(searchId, replyTo, classOf[SearchResult], WaitFor(settings.MAX_WAIT_FOR_SEARCH_RESULT))
       }
-
-
-    /** Get query filters
-      * 1. get filters for the search id
-      */
-    case request: GetQueryFiltersFor => queryProcessor forward request
 
   }
 

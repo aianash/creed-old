@@ -28,7 +28,7 @@ object CreedBuild extends Build with StandardLibraries {
     organization := "com.goshoplane",
     version := "1.0.0",
     scalaVersion := Version.scala,
-    crossScalaVersions := Seq(Version.scala, "2.10.4"),
+    crossScalaVersions := Seq(Version.scala, "2.11.4"),
     scalacOptions := Seq("-unchecked", "-optimize", "-deprecation", "-feature", "-language:higherKinds", "-language:implicitConversions", "-language:postfixOps", "-language:reflectiveCalls", "-Yinline-warnings", "-encoding", "utf8"),
     retrieveManaged := true,
 
@@ -46,7 +46,7 @@ object CreedBuild extends Build with StandardLibraries {
     base = file("."),
     settings = Project.defaultSettings ++
       sharedSettings
-  ) aggregate (core, search, query)
+  ) aggregate (core, search, query, service)
 
 
 
@@ -59,7 +59,10 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-core",
 
     libraryDependencies ++= Seq(
+      "com.goshoplane" %% "neutrino-core" % "1.1.1"
     ) ++ Libs.commonsCore
+      ++ Libs.commonsCatalogue
+      ++ Libs.playJson
   )
 
   lazy val query = Project(
@@ -71,6 +74,7 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-query",
 
     libraryDependencies ++= Seq(
+      "com.goshoplane" %% "neutrino-core" % "1.1.1"
     ) ++ Libs.lucene
       ++ Libs.akka
   ).dependsOn(core)
@@ -80,10 +84,8 @@ object CreedBuild extends Build with StandardLibraries {
     base = file("search"),
     settings = Project.defaultSettings ++
       sharedSettings
-  ).enablePlugins(JavaAppPackaging)
-  .settings(
+  ).settings(
     name := "creed-search",
-    mainClass in Compile := Some("creed.search.SearchServer"),
 
     libraryDependencies ++= Seq(
     ) ++ Libs.lucene
@@ -94,4 +96,22 @@ object CreedBuild extends Build with StandardLibraries {
       ++ Libs.logback
   ).dependsOn(core, query)
 
+  lazy val service = Project(
+    id = "creed-service",
+    base = file("service"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).enablePlugins(JavaAppPackaging)
+  .settings(
+    name := "creed-service",
+    mainClass in Compile := Some("creed.service.CreedServer"),
+
+    libraryDependencies ++= Seq(
+    ) ++ Libs.microservice,
+
+    makeScript <<= (stage in Universal, stagingDirectory in Universal, baseDirectory in ThisBuild, streams) map { (_, dir, cwd, streams) =>
+      var path = dir / "bin" / "creed-service"
+      sbt.Process(Seq("ln", "-sf", path.toString, "creed-service"), cwd) ! streams.log
+    }
+  ).dependsOn(search)
 }

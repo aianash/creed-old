@@ -14,9 +14,8 @@ class SearchService extends Actor with ActorLogging {
   context watch supervisor
 
   def receive = {
-    case msg @ UpdateQueryFor => supervisor forward msg
-    case msg @ GetSearchResultFor => supervisor forward msg
-    case msg @ GetQueryFiltersFor => supervisor forward msg
+    case msg : UpdateQueryFor => supervisor forward msg
+    case msg : GetSearchResultFor => supervisor forward msg
     case msg => log.warning("Received unsupported message {}", msg)
   }
 

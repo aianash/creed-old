@@ -18,15 +18,20 @@ class SearchSettings(cfg: Config) extends Extension {
 
   val INDEX_DIR = config.getString("creed.search.index-dir")
 
-  val FETCH_QUERY_FILTER_TIMEOUT = Timeout(config.getInt("creed.search.query.timeouts.for-fetch-filter").milliseconds)
 
   val SEARCH_RESULT_PROCESSING_TIMEOUT = Timeout(config.getInt("creed.search.timeouts.for-processing-search-result").milliseconds)
-  val SEARCH_RESULT_PAGE_SIZE = config.getInt("creed.search.search.result-page-size")
+  val SEARCH_RESULT_PAGE_SIZE = config.getInt("creed.search.result-page-size")
 
+  val FETCH_QUERY_FILTER_TIMEOUT = Timeout(config.getInt("creed.search.query.timeouts.for-fetch-filter").milliseconds)
   val MAX_QUERY_PROCESSING_TIME = config.getInt("creed.search.query.timeouts.for-processing").milliseconds
   val MAX_FETCH_SEARCH_RESULT_TIME = config.getInt("creed.search.timeouts.for-fetching-search-result").milliseconds
-  val FETCH_MORE_SEARCH_RESULT_TIMEOUT = Timeout(config.getInt("creed.search.timeouts-for.fetching-more-search-result").milliseconds)
+  val FETCH_MORE_SEARCH_RESULT_TIMEOUT = Timeout(config.getInt("creed.search.timeouts.for-fetching-more-search-result").milliseconds)
   val FETCH_SEARCH_CONTEXT_TIMEOUT = Timeout(config.getInt("creed.search.timeouts.for-fetching-search-context").milliseconds)
+  val MAX_WAIT_FOR_QUERY_RECOMMENDATION = config.getInt("creed.search.query.wait.for-query-recommendation").milliseconds
+  val MAX_WAIT_FOR_SEARCH_RESULT = config.getInt("creed.search.wait.for-search-result").milliseconds
+
+  val BACKCHANNEL_CLEANUP_START_DELAY = config.getInt("creed.search.backchannel.cleanup.start-delay").milliseconds
+  val BACKCHANNEL_CLEANUP_INTERVAL = config.getInt("creed.search.backchannel.cleanup.interval").milliseconds
 
   val SCHEDULER_CLEANUP_START_DELAY = config.getInt("creed.search.scheduler.cleanup.start-delay").milliseconds
   val SCHEDULER_CLEANUP_INTERVAL = config.getInt("creed.search.scheduler.cleanup.interval").milliseconds

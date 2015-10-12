@@ -1,31 +1,62 @@
 package creed
 package search
 
-import akka.actor.{Props, Actor, ActorLogging, Terminated}
+import scala.collection.JavaConversions._
+import scala.concurrent.duration._
+
+import java.util.concurrent.ConcurrentHashMap
+
+import akka.actor.{Props, Actor, ActorLogging, Terminated, ActorSelection}
+import akka.serialization._
+
+import scalaz._, Scalaz._
+
+import core._, search._, core.protocols._
+
+import commons.catalogue._, collection._
 
 
-class SearchBackchannel(settings: SearchSettings) extends Actor with ActorLogging {
-
+class SearchBackchannel extends Actor with ActorLogging {
+  import SearchBackchannel._
   import core.search.protocols._
   import protocols._
+  import context.dispatcher
+
+  val endpoints = new ConcurrentHashMap[(SearchId, Class[_]), ActorSelection]
+  val timekeep = new ConcurrentHashMap[(SearchId, Class[_]), WaitFor]
+
+  val settings = SearchSettings(context.system)
+
+  context.system.scheduler.schedule(settings.BACKCHANNEL_CLEANUP_START_DELAY,
+                                    settings.BACKCHANNEL_CLEANUP_INTERVAL,
+                                    self,
+                                    CleanUp)
 
   def receive = {
 
-    case RegisterBackchannelFor(searchId, endpoint) =>
+    case RegisterBackchannelFor(searchId, endpoint, clazz, waitFor) =>
+      endpoints.put(searchId -> clazz, ActorSelection(endpoint, Iterable.empty))
+      timekeep.put(searchId -> clazz, waitFor.start)
 
-    case SendQueryRecommendationsFor(searchId, recommendations) =>
 
-    case SendSearchResultFor(searchId, result) =>
+    case SendThruBackchannelFor(searchId, message) =>
+      endpoints.get(searchId -> message.getClass) match {
+        case null =>
+        case endpoint => endpoint ! message
+      }
+      endpoints.remove(searchId -> message.getClass)
 
-    case RegisterForNotifications(endpoint) =>
-      context watch endpoint
-
-    case Terminated(endpoint) =>
-
+    case CleanUp =>
+      val removals = timekeep.filter(_._2.expired).map(_._1)
+      removals foreach { k =>
+        endpoints remove k
+        timekeep remove k
+      }
   }
 
 }
 
 object SearchBackchannel {
   def props = Props(classOf[SearchBackchannel])
+  case object CleanUp
 }
