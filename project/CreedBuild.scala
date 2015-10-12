@@ -59,7 +59,7 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-core",
 
     libraryDependencies ++= Seq(
-      "com.goshoplane" %% "neutrino-core" % "1.1.1"
+      "com.goshoplane" %% "neutrino-core" % "0.0.1"
     ) ++ Libs.commonsCore
       ++ Libs.commonsCatalogue
       ++ Libs.playJson
@@ -74,7 +74,7 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-query",
 
     libraryDependencies ++= Seq(
-      "com.goshoplane" %% "neutrino-core" % "1.1.1"
+      "com.goshoplane" %% "neutrino-core" % "0.0.1"
     ) ++ Libs.lucene
       ++ Libs.akka
   ).dependsOn(core)
