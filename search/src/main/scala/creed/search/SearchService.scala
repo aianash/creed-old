@@ -8,7 +8,7 @@ import akka.actor.{Props, Actor, ActorLogging, Status}
   */
 class SearchService extends Actor with ActorLogging {
 
-  import core.search.protocols._
+  import client.search.protocols._
 
   val supervisor = context.actorOf(SearchSupervisor.props, "supervisor")
   context watch supervisor

@@ -11,7 +11,7 @@ import protocols._, models._
 
 class QueryToALT extends Actor {
 
-  val recommender = context.actorSelection("../alt")
+  val recommender = context.actorSelection("../recommender")
   val alts = new ConcurrentHashMap[SearchId, ALT]
   val model = new QueryALTModel
 

@@ -7,7 +7,7 @@ import java.nio.file.FileSystems
 
 import query._, query.protocols._
 import core._, cassie._
-import core.protocols._
+import client.protocols._
 
 import akka.actor.{Props, Actor, ActorLogging, Status}
 import akka.util.Timeout
@@ -28,7 +28,8 @@ class SearchSupervisor extends Actor with ActorLogging {
   import goshoplane.commons.core.protocols.Implicits._
   import protocols._
   import query._, protocols._
-  import core.search._, core.search.protocols._
+  import core.search.SearchSettings
+  import client.search.protocols._
 
   import context.dispatcher
 
@@ -60,8 +61,10 @@ class SearchSupervisor extends Actor with ActorLogging {
       * Also notify backchannel for register is not present
       */
     case UpdateQueryFor(searchId, query) =>
-      queryProcessor ! ProcessQueryFor(searchId, query)
+     println("got update query" + query);
+     println(searchId)
       backchannel ! RegisterBackchannelFor(searchId, sender(), classOf[QueryRecommendationsFor], WaitFor(settings.MAX_WAIT_FOR_QUERY_RECOMMENDATION))
+      queryProcessor ! ProcessQueryFor(searchId, query)
 
 
     /** Description of function

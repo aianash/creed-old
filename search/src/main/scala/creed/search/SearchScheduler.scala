@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 
 import java.util.concurrent.ConcurrentHashMap
 
-import core.search.SearchId, core.protocols._
+import core._, search.SearchId, core.protocols._
 
 import akka.actor.{ActorLogging, Actor, Props, ActorRef, Terminated}
 import akka.pattern.pipe

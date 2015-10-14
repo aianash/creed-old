@@ -7,7 +7,8 @@ import akka.actor.{Actor, Props, ActorSelection}
 
 import commons.catalogue._, attributes._
 
-import core.query._, core.search._, core.protocols._
+import core.query._, core.search._, core.search.protocols._
+import client.search._
 import models._
 
 class QueryRecommender(backchannel: ActorSelection) extends Actor {
@@ -21,11 +22,13 @@ class QueryRecommender(backchannel: ActorSelection) extends Actor {
 
   def receive = {
     case RecommendFor(searchId, query, alt) =>
+      println("recommender")
       model.styles(alt)
         .foreach { styles =>
           if(isNewFor(searchId, styles)) {
-            backchannel ! SendThruBackchannelFor(searchId, QueryRecommendations(styles, Filters(styles)))
+            backchannel ! SendThruBackchannelFor(searchId, QueryRecommendationsFor(searchId, QueryRecommendations(styles, Filters(styles))))
             searchContext ! ProcessForSearchContext(searchId, query, styles)
+            println("send to process for search context")
           }
         }
   }
@@ -54,10 +57,10 @@ object QueryRecommender {
     import ItemTypeGroup._
 
     private val filterMap = Map(
-      WomensTops -> QueryFilters(Seq.empty[QueryFilter])
-        // ColorFilter("red", "blue", "green"),
-        // SizesFilter(S, M, L, XL, XXL)
-      // )
+      WomensTops -> QueryFilters(
+        ColorFilter("red", "blue", "green"),
+        SizesFilter(S, M, L, XL, XXL)
+      )
     )
 
     def apply(styles: Set[ClothingStyle]) =

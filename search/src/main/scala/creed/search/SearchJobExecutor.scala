@@ -4,6 +4,7 @@ package search
 import scala.util._
 
 import query.SearchContext
+import core.SearchSettings
 import core.search.{SearchId, SearchResult}
 import core.search.exception._
 

@@ -46,9 +46,22 @@ object CreedBuild extends Build with StandardLibraries {
     base = file("."),
     settings = Project.defaultSettings ++
       sharedSettings
-  ) aggregate (core, search, query, service)
+  ) aggregate (client, core, search, query, models, service)
 
+  lazy val client = Project(
+    id = "creed-client",
+    base = file("client"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).settings(
+    name := "creed-client",
 
+    libraryDependencies ++= Seq(
+      "com.goshoplane" %% "neutrino-core" % "0.0.1"
+    ) ++ Libs.commonsCore
+      ++ Libs.commonsCatalogue
+      ++ Libs.playJson
+  )
 
   lazy val core = Project(
     id = "creed-core",
@@ -63,7 +76,23 @@ object CreedBuild extends Build with StandardLibraries {
     ) ++ Libs.commonsCore
       ++ Libs.commonsCatalogue
       ++ Libs.playJson
-  )
+  ) dependsOn(client)
+
+
+  lazy val models = Project(
+    id = "creed-models",
+    base = file("models"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).settings(
+    name := "creed-models",
+
+    libraryDependencies ++= Seq(
+    ) ++ Libs.lucene
+      ++ Libs.fastutil
+      ++ Libs.hemingway
+      ++ Libs.akka
+  ).dependsOn(core)
 
   lazy val query = Project(
     id = "creed-query",

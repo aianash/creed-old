@@ -40,6 +40,7 @@ class SearchBackchannel extends Actor with ActorLogging {
 
 
     case SendThruBackchannelFor(searchId, message) =>
+      println(message)
       endpoints.get(searchId -> message.getClass) match {
         case null =>
         case endpoint => endpoint ! message

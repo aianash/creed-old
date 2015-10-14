@@ -4,7 +4,7 @@ package search
 import scala.concurrent.Future
 import scala.collection.mutable.SortedSet
 
-import core.search._
+import core.SearchSettings, core.search._
 import query.SearchContext
 
 import akka.actor.{Props, Actor, ActorLogging}
