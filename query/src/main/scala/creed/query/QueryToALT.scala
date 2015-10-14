@@ -6,15 +6,18 @@ import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{Props, Actor}
 
 import client.search.SearchId
-import creed.query.protocols._
-import creed.query.models.QueryALTModel
+import core.search.SearchSettings
+import query.protocols._
+import query.models.QueryALTModel
 
 
 class QueryToALT extends Actor {
 
+  val settings = SearchSettings(context.system)
+
   val recommender = context.actorSelection("../recommender")
   val alts = new ConcurrentHashMap[SearchId, ALT]
-  val model = new QueryALTModel
+  val model = new QueryALTModel ///(settings.INTENT_DATASET_FILE)
 
   def receive = {
     case ProcessQueryFor(searchId, query) =>

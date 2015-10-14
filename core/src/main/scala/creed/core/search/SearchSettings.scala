@@ -18,7 +18,7 @@ class SearchSettings(cfg: Config) extends Extension {
   }
 
   val INDEX_DIR = config.getString("creed.search.index-dir")
-
+  val INTENT_DATASET_FILE = config.getString("creed.search.query.intent-dataset-file")
 
   val SEARCH_RESULT_PROCESSING_TIMEOUT = Timeout(config.getInt("creed.search.timeouts.for-processing-search-result").milliseconds)
   val SEARCH_RESULT_PAGE_SIZE = config.getInt("creed.search.result-page-size")
