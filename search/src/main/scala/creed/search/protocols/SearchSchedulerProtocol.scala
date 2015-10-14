@@ -3,7 +3,7 @@ package search
 package protocols
 
 import query.SearchContext
-import core.search._
+import client.search._
 
 
 sealed trait SearchSchedulerMessages

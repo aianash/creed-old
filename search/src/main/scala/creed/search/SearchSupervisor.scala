@@ -5,9 +5,8 @@ import scala.util.{Try, Success, Failure}
 
 import java.nio.file.FileSystems
 
-import query._, query.protocols._
 import core._, cassie._
-import client.protocols._
+import client.search._, client.search.protocols._
 
 import akka.actor.{Props, Actor, ActorLogging, Status}
 import akka.util.Timeout
@@ -26,10 +25,9 @@ import org.apache.lucene.search.IndexSearcher
 class SearchSupervisor extends Actor with ActorLogging {
 
   import goshoplane.commons.core.protocols.Implicits._
-  import protocols._
-  import query._, protocols._
-  import core.search.SearchSettings
-  import client.search.protocols._
+  import creed.search.protocols._
+  import query._, query.protocols._
+  import core.search.SearchSettings, core.search.protocols._
 
   import context.dispatcher
 

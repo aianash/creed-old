@@ -4,15 +4,16 @@ package search
 import scala.concurrent.Future
 import scala.collection.mutable.SortedSet
 
-import core.SearchSettings, core.search._
-import query.SearchContext
-
 import akka.actor.{Props, Actor, ActorLogging}
 import akka.pattern.pipe
 
 import org.apache.lucene.search.{IndexSearcher, TopScoreDocCollector}
 
 import commons.catalogue._
+
+import client.search._
+import core.search.SearchSettings
+import query.SearchContext
 
 
 class Searcher(indxSearcher: IndexSearcher) extends Actor with ActorLogging {

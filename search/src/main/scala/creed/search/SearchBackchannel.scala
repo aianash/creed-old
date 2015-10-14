@@ -11,14 +11,15 @@ import akka.serialization._
 
 import scalaz._, Scalaz._
 
-import core._, search._, core.protocols._
+import client.search._
+import core.search._, core.search.protocols._
+import core.WaitFor
 
 import commons.catalogue._, collection._
 
 
 class SearchBackchannel extends Actor with ActorLogging {
   import SearchBackchannel._
-  import core.search.protocols._
   import protocols._
   import context.dispatcher
 

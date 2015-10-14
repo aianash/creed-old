@@ -5,8 +5,9 @@ import java.util.concurrent.ConcurrentHashMap
 
 import akka.actor.{Props, Actor}
 
-import core.query._, core.search._
-import protocols._, models._
+import client.search.SearchId
+import creed.query.protocols._
+import creed.query.models.QueryALTModel
 
 
 class QueryToALT extends Actor {

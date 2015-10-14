@@ -2,7 +2,7 @@ package creed
 package query
 package protocols
 
-import core.query._, core.search._
+import client.search._
 
 
 trait QueryRecommenderMessages

@@ -4,9 +4,9 @@ package search
 import scala.util._
 
 import query.SearchContext
-import core.SearchSettings
-import core.search.{SearchId, SearchResult}
-import core.search.exception._
+import core.search.SearchSettings
+import client.search.{SearchId, SearchResult}
+import client.search.exception._
 
 import akka.actor.{Actor, Props, ActorLogging, ReceiveTimeout, ActorSelection}
 

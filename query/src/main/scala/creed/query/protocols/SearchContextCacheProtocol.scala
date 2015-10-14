@@ -2,7 +2,7 @@ package creed
 package query
 package protocols
 
-import core.search.SearchId
+import client.search.SearchId
 
 
 sealed trait SearchContextCacheMessages

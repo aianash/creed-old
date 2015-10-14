@@ -20,8 +20,8 @@ class QueryProcessor extends Actor with ActorLogging {
   val searchContext = context.actorOf(SearchContextProcessor.props, "searchContext")
 
   // Register to get notifcation when search id's result is sent
-  override def preStart(): Unit =
-    backchannel ! RegisterForNotifications(self)
+  // override def preStart(): Unit =
+    // backchannel ! RegisterForNotifications(self)
 
   def receive = {
     case req: ProcessQueryFor     => alt ! req

@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 
 import goshoplane.commons.core.protocols.Implicits._
 import query.SearchContext
-import core.search._
+import client.search._
 
 import core.cassie._
 

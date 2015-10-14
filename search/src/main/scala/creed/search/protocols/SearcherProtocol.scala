@@ -2,7 +2,7 @@ package creed
 package search
 package protocols
 
-import core.search.SearchId
+import client.search.SearchId
 import query.SearchContext
 
 sealed trait SearcherProtocol

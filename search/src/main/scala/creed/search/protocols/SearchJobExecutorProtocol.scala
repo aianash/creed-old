@@ -2,7 +2,7 @@ package creed
 package search
 package protocols
 
-import core.search.{SearchId, SearchResult}
+import client.search.{SearchId, SearchResult}
 
 
 sealed trait SearchJobExecutorMessages

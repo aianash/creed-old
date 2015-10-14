@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import akka.actor.{Actor, Props, ActorLogging}
 
-import core._, search._
+import core.search._
 
 
 class SearchContextProcessor extends Actor with ActorLogging {

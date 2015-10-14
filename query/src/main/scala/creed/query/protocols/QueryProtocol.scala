@@ -2,7 +2,7 @@ package creed
 package query
 package protocols
 
-import core.search.{SearchId, Query}
+import client.search.{SearchId, Query}
 
 import goshoplane.commons.core.protocols._
 

@@ -7,12 +7,14 @@ import java.util.concurrent.ConcurrentHashMap
 
 import akka.actor.{Actor, Props, ActorLogging}
 
-import core._, search._
+import core.WaitFor
+import client.search.SearchId
+import core.search.SearchSettings
 
 
 class SearchContextCache extends Actor with ActorLogging {
   import SearchContextCache._
-  import protocols._
+  import creed.query.protocols._
   import context.dispatcher
 
   val settings = SearchSettings(context.system)
