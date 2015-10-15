@@ -6,6 +6,7 @@ import scala.util.Random
 import scala.collection.Set
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 import java.io.File
 import java.util.{Set => JavaSet}
@@ -34,10 +35,10 @@ class IntentDataset(db: DB) {
 
   var similarity: Similarity = Cosine(0.3)
 
-  def +=(intent: Intent): Unit = add(intent)
+  def +=[T](intent: Intent[T]): Unit = add(intent)
   def +=(rel: (ALT, Float)) = add(rel)
 
-  def add(intent: Intent): Unit = intent match {
+  def add[T](intent: Intent[T]): Unit = intent match {
     case Activity(activity) =>
       intentDict += (activity -> Map("type" -> intent.intentType))
       activities.add(activity)
@@ -47,6 +48,7 @@ class IntentDataset(db: DB) {
     case TimeWeather(timeWeather) =>
       intentDict += (timeWeather -> Map("type" -> intent.intentType))
       timeWeathers.add(timeWeather)
+    case _ =>
   }
 
   def add(rel: (ALT, Float)): Unit = {
@@ -65,9 +67,9 @@ class IntentDataset(db: DB) {
     altsFreq.add(entry)
   }
 
-  def findSimilar(intent: Intent, topK: Int): Set[Intent] =
+  def findSimilar[T](intent: Intent[T], topK: Int): Set[Intent[T]] =
     intentDict.findSimilar(intent.value, similarity, topK)
-              .filter(_.payload("type").equals(intent.intentType))
+              .filter(_.payload("type") == intent.intentType)
               .map(_.str.map(intent.copy(_)))
               .flatten
 
@@ -84,6 +86,18 @@ class IntentDataset(db: DB) {
   def generateRandomALT: Iterator[ALT] =
     (WindowedRandomIterator(activities) <+> looks |+| timeWeathers)((x, t) => ALT(Activity(x._1), Look(x._2), TimeWeather(t)))
 
+  def count[I <: Intent[I]](clazz: Class[I]): Int = {
+    import Intent._
+    clazz match {
+      case ACTIVITYCLAZZ    => activities.size
+      case LOOKCLAZZ        => looks.size
+      case TIMEWEATHERCLAZZ => timeWeathers.size
+      case ANYTHINGCLAZZ    => -1
+    }
+  }
+
+  def count[I <: Intent[I] : ClassTag]: Int =
+    count(implicitly[ClassTag[I]].runtimeClass.asInstanceOf[Class[I]]) // ugly
 }
 
 object IntentDataset {

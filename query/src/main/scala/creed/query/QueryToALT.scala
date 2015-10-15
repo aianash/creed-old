@@ -17,7 +17,7 @@ class QueryToALT extends Actor {
 
   val recommender = context.actorSelection("../recommender")
   val alts = new ConcurrentHashMap[SearchId, ALT]
-  val model = new QueryALTModel ///(settings.INTENT_DATASET_FILE)
+  val model = QueryALTModel(settings.INTENT_DATASET_FILE)
 
   def receive = {
     case ProcessQueryFor(searchId, query) =>
