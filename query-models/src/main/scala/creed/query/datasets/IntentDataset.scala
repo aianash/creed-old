@@ -16,7 +16,7 @@ import org.mapdb._
 import hemingway.dictionary.FileBasedDictionary
 import hemingway.dictionary.similarity._
 
-import core._
+import core._, utils.MapDBUtils
 
 
 class IntentDataset(db: DB) {
@@ -30,7 +30,7 @@ class IntentDataset(db: DB) {
   private val timeWeathers = db.hashSetCreate("_timeWeathers").makeOrGet[String].asScala
 
   private val altsFreq = db.treeSetCreate("_alts_frequency")
-                       .serializer(ARRAY5)
+                       .serializer(MapDBUtils.ARRAY5)
                        .makeOrGet[Array[Object]]
 
   var similarity: Similarity = Cosine(0.3)
@@ -104,10 +104,6 @@ object IntentDataset {
 
   def apply(filePath: String): IntentDataset = apply(mkDB(filePath))
   def apply(db: DB) = new IntentDataset(db)
-
-  private val ARRAY5 = new BTreeKeySerializer.ArrayKeySerializer(
-    Array(Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR),
-    Array(Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC))
 
   private def mkDB(dbPath: String) =
     DBMaker.fileDB(new File(dbPath))
