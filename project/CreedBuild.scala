@@ -57,7 +57,8 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-client",
 
     libraryDependencies ++= Seq(
-      "com.goshoplane" %% "neutrino-core" % "0.0.1"
+      "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons
     ) ++ Libs.commonsCore
       ++ Libs.commonsCatalogue
       ++ Libs.playJson
@@ -72,10 +73,12 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-core",
 
     libraryDependencies ++= Seq(
-      "com.goshoplane" %% "neutrino-core" % "0.0.1"
+      "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons
     ) ++ Libs.commonsCore
       ++ Libs.commonsCatalogue
       ++ Libs.playJson
+      ++ Libs.mapdb
   ) dependsOn(client)
 
 

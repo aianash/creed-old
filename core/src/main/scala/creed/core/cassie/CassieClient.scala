@@ -4,6 +4,7 @@ package cassie
 
 import akka.actor.{Props, Actor}
 
+import commons.owner.{Brand => _, _}
 import commons.catalogue._, items._, attributes._, collection._
 
 
@@ -29,13 +30,15 @@ class CassieClient extends Actor {
   val gender = Male
   val images = Images("http://goshoplane.com", Seq("http://goshoplane.com"))
   val itemUrl = ItemUrl("http://goshoplane.com")
+  val fabric = ApparelFabric("cotton")
+  val fit = ApparelFit("slim fit")
 
   val brandItem =
     MensTShirt.builder.forBrand
               .ids(brandId, itemId, variantId)
               .title(title)
               .namedType(namedType)
-              .clothing(brand, price, sizes, colors, itemStyles, description, stylingTips, gender, images, itemUrl)
+              .clothing(brand, price, sizes, colors, itemStyles, description, stylingTips, gender, images, itemUrl, fit, fabric)
               .build
 
   val item =
