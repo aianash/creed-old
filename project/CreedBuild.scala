@@ -79,7 +79,7 @@ object CreedBuild extends Build with StandardLibraries {
       ++ Libs.commonsCatalogue
       ++ Libs.playJson
       ++ Libs.mapdb
-  ) dependsOn(client)
+  ).dependsOn(client)
 
 
   lazy val queryModels = Project(
@@ -91,7 +91,8 @@ object CreedBuild extends Build with StandardLibraries {
     name := "creed-query-models",
 
     libraryDependencies ++= Seq(
-      "com.goshoplane" %% "neutrino-core" % "0.0.1"
+      "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2"
     ) ++ Libs.lucene
       ++ Libs.fastutil
       ++ Libs.hemingway
@@ -140,6 +141,7 @@ object CreedBuild extends Build with StandardLibraries {
     mainClass in Compile := Some("creed.service.CreedServer"),
 
     libraryDependencies ++= Seq(
+      // "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons
     ) ++ Libs.microservice,
 
     makeScript <<= (stage in Universal, stagingDirectory in Universal, baseDirectory in ThisBuild, streams) map { (_, dir, cwd, streams) =>

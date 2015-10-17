@@ -9,7 +9,7 @@ import core._, utils.MapDBUtils
 import commons.catalogue._, attributes._
 
 // [TO DO] In next stage add brand, sizes, etc
-case class ItemFeature(
+case class DatasetItemFeature(
   itemTypeGroup: ItemTypeGroup,
   styles: Seq[ClothingStyle],
   fabric: ApparelFabric,
@@ -24,8 +24,15 @@ case class ItemFeature(
   * @return Return value - blah blah
   */
 class ALTItemRelevanceDataset(db: DB) {
-  def +=(entry: (ALT, ItemFeature, Float)): Unit = add(entry)
-  def add(entry: (ALT, ItemFeature, Float)): Unit = {}
-  def iterator: Iterator[(ALT, ItemFeature, Float, Int)] = Iterator.empty
-  def iterator(alt: ALT): Iterator[(ItemFeature, Float, Int)] = Iterator.empty
+  def +=(entry: (ALT, DatasetItemFeature, Float)): Unit = add(entry)
+  def add(entry: (ALT, DatasetItemFeature, Float)): Unit = {}
+  def iterator: Iterator[(ALT, DatasetItemFeature, Float, Int)] = Iterator.empty
+  def iterator(alt: ALT): Iterator[(DatasetItemFeature, Float, Int)] = Iterator.empty
+}
+
+object ALTItemRelevanceDataset {
+
+  def apply(filePath: String): ALTItemRelevanceDataset = apply(makeDB(filePath))
+  def apply(db: DB) = new ALTItemRelevanceDataset(db)
+
 }

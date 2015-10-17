@@ -102,17 +102,7 @@ class IntentDataset(db: DB) {
 
 object IntentDataset {
 
-  def apply(filePath: String): IntentDataset = apply(mkDB(filePath))
+  def apply(filePath: String): IntentDataset = apply(makeDB(filePath))
   def apply(db: DB) = new IntentDataset(db)
-
-  private def mkDB(dbPath: String) =
-    DBMaker.fileDB(new File(dbPath))
-          .asyncWriteFlushDelay(1)
-          .cacheHardRefEnable
-          .transactionDisable
-          .closeOnJvmShutdown
-          .compressionEnable
-          .fileMmapEnableIfSupported
-          .make
 
 }

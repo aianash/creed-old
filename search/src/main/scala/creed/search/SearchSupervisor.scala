@@ -59,8 +59,6 @@ class SearchSupervisor extends Actor with ActorLogging {
       * Also notify backchannel for register is not present
       */
     case UpdateQueryFor(searchId, query) =>
-     println("got update query" + query);
-     println(searchId)
       backchannel ! RegisterBackchannelFor(searchId, sender(), classOf[QueryRecommendationsFor], WaitFor(settings.MAX_WAIT_FOR_QUERY_RECOMMENDATION))
       queryProcessor ! ProcessQueryFor(searchId, query)
 
