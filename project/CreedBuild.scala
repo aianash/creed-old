@@ -113,6 +113,7 @@ object CreedBuild extends Build with StandardLibraries {
       "com.goshoplane" %% "neutrino-core" % "0.0.1"
     ) ++ Libs.lucene
       ++ Libs.akka
+      ++ Libs.playJson
   ).dependsOn(core, queryModels)
 
   lazy val search = Project(
