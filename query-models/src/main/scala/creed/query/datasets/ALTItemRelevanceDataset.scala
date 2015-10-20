@@ -5,7 +5,7 @@ package datasets
 import scala.reflect.ClassTag
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-import scala.io._
+import scala.io.Source
 import scala.math.Ordered
 
 import org.mapdb._
@@ -16,49 +16,40 @@ import core._, utils.MapDBUtils
 
 import commons.catalogue._, attributes._
 
+
 /**
  * This class represents a data point for catalogue items
  * [TODO] Add brand, sizes etc in later stages
  */
-case class DatasetItemFeature(
+case class ItemFeature(
   itemTypeGroup: ItemTypeGroup,
   styles: Seq[ClothingStyle],
   fabric: ApparelFabric,
   fit: ApparelFit,
   colors: Colors,
   stylingTips: StylingTips,
-  descr: Description) extends Ordered[DatasetItemFeature] {
+  descr: Description) extends Ordered[ItemFeature] {
 
-  def compare(that: DatasetItemFeature) = {
+  def compare(that: ItemFeature) = {
     if((this.itemTypeGroup.name == that.itemTypeGroup.name) &&
       (this.styles.map(_.name) == that.styles.map(_.name)) &&
       (this.fabric.fabric == that.fabric.fabric) &&
       (this.fit.fit == that.fit.fit) &&
-      (this.colors.values == that.colors.values)) 0 else 1
-  }
-
-  override def toString = {
-    s"""
-    ItemTypeGroup: ${itemTypeGroup.name}
-    Styles: ${(styles map { x => x.name }).mkString(", ")}
-    Fabric: ${fabric.fabric}
-    Fit: ${fit.fit}
-    Colors: ${colors.values.mkString(", ")}
-    Description: ${descr.text}
-    Styling Tips: ${stylingTips.text}
-    """
+      (this.colors.values == that.colors.values) &&
+      (this.descr.text == that.descr.text) &&
+      (this.stylingTips.text == that.stylingTips.text)) 0 else 1
   }
 
 }
 
 /**
- * This dataset represents the relevance of an ALT for a DatasetItemFeature. It also
- * represents the relevance of an ALT for a ItemTypeGroup and ClothingStyle
+ * This dataset represents the relevance of an ALT to an ItemFeature. It also
+ * represents the relevance of an ALT to a ItemTypeGroup and a ClothingStyle
  *
  * @param {DB}     db
  * @param {String} filepath of catalogue item json file
  */
-class ALTItemRelevanceDataset(db: DB, itemFile: String) {
+class ALTItemRelevanceDataset(db: DB) {
 
   import ALTItemRelevanceDataset._
 
@@ -74,39 +65,31 @@ class ALTItemRelevanceDataset(db: DB, itemFile: String) {
                                     .serializer(MapDBUtils.ARRAY6)
                                     .makeOrGet[Array[Object]]
 
-  private val items        = Source.fromFile(itemFile).getLines.toList
-  private val activities   = db.hashSetCreate("_activities").makeOrGet[String].asScala
-  private val looks        = db.hashSetCreate("_looks").makeOrGet[String].asScala
-  private val timeWeathers = db.hashSetCreate("_timeWeathers").makeOrGet[String].asScala
-
   /**
    * Alias of {add} function
    */
-  def +=(entry: (ALT, DatasetItemFeature, Float)): Unit = add(entry)
+  def +=(entry: (ALT, ItemFeature, Float)): Unit = add(entry)
 
   /**
    * This function is used to add entries to the dataset
-   * @param {(ALT, DatasetItemFeature, Float)} Tuple consiting of ALT, DatasetItemFeature and
-   *                                           Relevance
+   * @param {(ALT, ItemFeature, Float)} Tuple consiting of ALT, ItemFeature and Relevance
    */
-  def add(input: (ALT, DatasetItemFeature, Float)): Unit = {
-    val alts      = input._1
-    val feature   = input._2
-    val relevance = input._3
+  def add(input: (ALT, ItemFeature, Float)): Unit = {
+    val (alts, feature, relevance) = input
     addItemFeature(alts, feature, relevance)
     addClothingStyles(alts, feature.styles, relevance)
     addItemTypeGroup(alts, feature.itemTypeGroup, relevance)
   }
 
   /**
-   * Iterator for given type T. T can be one of the following: {DatasetItemFeature},
+   * Iterator for given type T. T can be one of the following: {ItemFeature},
    * {ClothingStyle} and {ItemTypeGroup}
    *
    * @param T Type parameter
    */
   def iterator[T: ClassTag]: Iterator[(ALT, T, Float, Int)] =
     implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]] match {
-      case DATASETITEMFEATURECLAZZ =>
+      case ITEMFEATURECLAZZ =>
         altsItemFeature.iterator.map { arr =>
           val (alt: ALT, rel: Float, count: Int) = extract(arr, true)
           val feature = arr(3).asInstanceOf[T]
@@ -130,13 +113,13 @@ class ALTItemRelevanceDataset(db: DB, itemFile: String) {
 
   /**
    * Iteartor for a given type T for a given {ALT}. T can be one of the following:
-   * {DatasetItemFeature}, {ClothingStyle} and {ItemTypeGroup}
+   * {ItemFeature}, {ClothingStyle} and {ItemTypeGroup}
    *
    * @param T Type paramemeter
    */
   def iterator[T: ClassTag](alt: ALT): Iterator[(T, Float, Int)] =
     implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]] match {
-      case DATASETITEMFEATURECLAZZ =>
+      case ITEMFEATURECLAZZ =>
         Fun.filter(altsItemFeature, alt.activity.value, alt.look.value, alt.timeWeather.value).iterator.map { arr =>
           val (rel: Float, count: Int) = extract(arr, false)
           val feature = arr(3).asInstanceOf[T]
@@ -159,35 +142,18 @@ class ALTItemRelevanceDataset(db: DB, itemFile: String) {
     }
 
   /**
-   * Iterator for random combinations of {ALT} and {DatasetItemFeature}
-   */
-  def generateRandomALTFeatureCombo = {
-    val altIter = (WindowedRandomIterator(activities) <+> looks |+| timeWeathers)((x, t) => ALT(Activity(x._1), Look(x._2), TimeWeather(t)))
-    (altIter |+| items)((s, t) => {
-      val itemJson = Json.parse(t)
-      val itg      = ItemTypeGroup((itemJson \ "itemTypeGroup").as[String])
-      val styles   = (itemJson \ "styles").as[Seq[String]] map { x => ClothingStyle(x) }
-      val fabric   = ApparelFabric((itemJson \ "fabric").as[String])
-      val fit      = ApparelFit((itemJson \ "fit").as[String])
-      val color    = Colors((itemJson \ "colors").as[Seq[String]])
-      val tips     = StylingTips((itemJson \ "stylingTips").as[String])
-      val descr    = Description((itemJson \ "descr").as[String])
-      (s, DatasetItemFeature(itg, styles, fabric, fit, color, tips, descr))
-    })
-  }
-
-  /**
-   * This function adds given {ALT}, {DatasetItemFeature} and corresponding relevance to the dataset
+   * This function adds given {ALT}, {ItemFeature} and corresponding relevance to the item feature
    *
    * @param {ALT} alt
-   * @param {DatasetItemFeature} dataset item feature
-   * @param {Float} relevance of alt for given dataset item feature
+   * @param {ItemFeature} item feature
+   * @param {Float} relevance of alt for given item feature
    */
-  private def addItemFeature(alt: ALT, feature: DatasetItemFeature, relevance: java.lang.Float) = {
+  private def addItemFeature(alt: ALT, feature: ItemFeature, relevance: Float) = {
+    val rel: java.lang.Float = relevance
     val count: java.lang.Integer = 1
 
-    val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, feature, relevance, count)
-    val iter  = Fun.filter(altsItemFeature, alt.activity.value, alt.look.value, alt.timeWeather.value, feature, relevance).iterator
+    val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, feature, rel, count)
+    val iter  = Fun.filter(altsItemFeature, alt.activity.value, alt.look.value, alt.timeWeather.value, feature, rel).iterator
     if(iter.hasNext) {
       val existing = iter.next
       altsItemFeature.remove(existing)
@@ -199,18 +165,19 @@ class ALTItemRelevanceDataset(db: DB, itemFile: String) {
   }
 
   /**
-   * This function adds given {ALT}, {ClothingStyle} and corresponding relevance to the dataset
+   * This function adds given {ALT}, {ClothingStyle} and corresponding relevance to the clothing style
    *
    * @param {ALT} alt
    * @param {ClothingStyle} clothing style
-   * @param {Float} relevance of alt for given clothing style
+   * @param {Float} relevance of alt to given clothing style
    */
-  private def addClothingStyles(alt: ALT, styles: Seq[ClothingStyle], relevance: java.lang.Float) = {
+  private def addClothingStyles(alt: ALT, styles: Seq[ClothingStyle], relevance: Float) = {
+    val rel: java.lang.Float = relevance
     val count: java.lang.Integer  = 1
 
     styles foreach { style =>
-      val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, style.name, relevance, count)
-      val iter  = Fun.filter(altsClothingStyle, alt.activity.value, alt.look.value, alt.timeWeather.value, style.name, relevance).iterator
+      val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, style.name, rel, count)
+      val iter  = Fun.filter(altsClothingStyle, alt.activity.value, alt.look.value, alt.timeWeather.value, style.name, rel).iterator
       if(iter.hasNext) {
         val existing = iter.next
         altsClothingStyle.remove(existing)
@@ -223,17 +190,18 @@ class ALTItemRelevanceDataset(db: DB, itemFile: String) {
   }
 
   /**
-   * This function adds given {ALT}, {ItemTypeGroup} and corresponding relevance to the dataset
+   * This function adds given {ALT}, {ItemTypeGroup} and corresponding relevance to the item type group
    *
    * @param {ALT} alt
    * @param {ItemTypeGroup} item type group
-   * @param {Float} relevance of alt for given item type group
+   * @param {Float} relevance of alt to given item type group
    */
-  private def addItemTypeGroup(alt: ALT, itg: ItemTypeGroup, relevance: java.lang.Float) = {
+  private def addItemTypeGroup(alt: ALT, itg: ItemTypeGroup, relevance: Float) = {
+    val rel: java.lang.Float = relevance
     val count: java.lang.Integer = 1
 
-    val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, itg.name, relevance, count)
-    val iter  = Fun.filter(altsItemTypeGroup, alt.activity.value, alt.look.value, alt.timeWeather.value, itg.name, relevance).iterator
+    val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, itg.name, rel, count)
+    val iter  = Fun.filter(altsItemTypeGroup, alt.activity.value, alt.look.value, alt.timeWeather.value, itg.name, rel).iterator
     if(iter.hasNext) {
       val existing = iter.next
       altsItemTypeGroup.remove(existing)
@@ -267,11 +235,11 @@ class ALTItemRelevanceDataset(db: DB, itemFile: String) {
  */
 object ALTItemRelevanceDataset {
 
-  def apply(filePath: String, itemFile: String): ALTItemRelevanceDataset = apply(makeDB(filePath), itemFile)
-  def apply(db: DB, itemFile: String) = new ALTItemRelevanceDataset(db, itemFile)
+  def apply(filePath: String): ALTItemRelevanceDataset = apply(makeDB(filePath))
+  def apply(db: DB) = new ALTItemRelevanceDataset(db)
 
-  val ITEMTYPEGROUPCLAZZ      = classOf[ItemTypeGroup]
-  val DATASETITEMFEATURECLAZZ = classOf[DatasetItemFeature]
-  val CLOTHINGSTYLECLAZZ      = classOf[ClothingStyle]
+  val ITEMTYPEGROUPCLAZZ = classOf[ItemTypeGroup]
+  val ITEMFEATURECLAZZ   = classOf[ItemFeature]
+  val CLOTHINGSTYLECLAZZ = classOf[ClothingStyle]
 
 }
