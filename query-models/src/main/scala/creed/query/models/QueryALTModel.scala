@@ -2,11 +2,15 @@ package creed
 package query
 package models
 
+import scala.collection.JavaConversions._
+
 import java.io.File
 
 import scalaz._, Scalaz._
 
 import org.mapdb._
+
+import it.unimi.dsi.fastutil.objects.{Object2FloatOpenHashMap, Object2IntOpenHashMap}
 
 import client.search.Query
 import datasets.IntentDataset
@@ -15,25 +19,18 @@ import datasets.IntentDataset
 class QueryALTModel(db: DB) {
 
   def alt(query: Query): Option[ALT] = {
-    // dataset.findSimilar(clean(query.queryStr))
     ALT(Activity("party"), Look("modern"), TimeWeather("night")).some
-
   }
+
+  def alts: Iterator[ALT] = Iterator.empty
 
 }
 
 object QueryALTModel {
-  def apply(modelFilePath: String) = new QueryALTModel(mkDB(modelFilePath))
+  def apply(modelFilePath: String) = new QueryALTModel(makeDB(modelFilePath))
+}
 
-  private[models] def mkDB(dbFile: File): DB =
-    DBMaker.fileDB(dbFile)
-           .asyncWriteFlushDelay(1)
-           .cacheHardRefEnable
-           .transactionDisable
-           .closeOnJvmShutdown
-           .compressionEnable
-           .fileMmapEnableIfSupported
-           .make
 
-  private[models] def mkDB(dbPath: String): DB = mkDB(new File(dbPath))
+case class BloomFilter[T]() {
+  def +=(e: T) = this
 }

@@ -70,6 +70,7 @@ class SearchSupervisor extends Actor with ActorLogging {
     case request @ GetSearchResultFor(searchId) =>
       implicit val timeout = settings.FETCH_SEARCH_CONTEXT_TIMEOUT
       val replyTo = sender()
+      println(searchId)
       for(searchContext <- queryProcessor ?= GetSearchContextFor(searchId)) {
         scheduler ! ScheduleSearchingFor(searchId, searchContext)
         backchannel ! RegisterBackchannelFor(searchId, replyTo, classOf[SearchResult], WaitFor(settings.MAX_WAIT_FOR_SEARCH_RESULT))

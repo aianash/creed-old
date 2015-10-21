@@ -34,7 +34,13 @@ class SearchContextCache extends Actor with ActorLogging {
     case GetSearchContextFor(searchId) =>
       cache.get(searchId) match {
         case null => akka.actor.Status.Failure(new Exception("No search context for this search id")) // doesnt not handle the delayed case
-        case (context, _) => sender() ! context
+        case (context, _) => println(context); sender() ! context
+      }
+
+    case HasQueryStrChangedFor(searchId, queryStr) =>
+      cache.get(searchId) match {
+        case (context, _) if context.query.queryStr == queryStr => sender() ! false
+        case _ => sender() ! true
       }
 
     case CleanUp =>

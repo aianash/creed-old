@@ -11,7 +11,7 @@ import play.api.libs.json._
 import commons.catalogue._, attributes._
 
 
-case class QueryFilters(filters: QueryFilter*) {
+case class QueryFilters(title: String, filters: QueryFilter*) {
   def filter[F: ClassTag] = {
     val clazz = implicitly[ClassTag[F]].runtimeClass
     filters.find(clazz.isInstance(_)).map(_.asInstanceOf[F])
@@ -24,7 +24,7 @@ object QueryFilters {
   import ItemTypeGroup._
 
   private val filterMap = Map(
-    WomensTops -> QueryFilters(
+    WomensTops -> QueryFilters("Top's Filter",
       ColorFilter("red", "blue", "green"),
       SizesFilter(S, M, L, XL, XXL)
     )

@@ -5,7 +5,7 @@ import java.io.File
 import org.mapdb._
 
 
-package object query {
+package object query extends IntentBuildrs {
 
   type Token = String
 

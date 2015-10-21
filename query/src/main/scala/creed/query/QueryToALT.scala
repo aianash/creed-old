@@ -21,8 +21,8 @@ class QueryToALT extends Actor {
 
   def receive = {
     case ProcessQueryFor(searchId, query) =>
-      model.alt(query) foreach(alt =>
-        if(isNewFor(searchId, alt)) recommender ! RecommendFor(searchId, query, alt))
+      model.alt(query) foreach { alt =>
+        if(isNewFor(searchId, alt)) recommender ! RecommendFor(searchId, query, alt) }
   }
 
   private def isNewFor(searchId: SearchId, alt: ALT) =
