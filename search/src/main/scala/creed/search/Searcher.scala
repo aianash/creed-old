@@ -32,7 +32,7 @@ class Searcher(indxSearcher: IndexSearcher) extends Actor with ActorLogging {
     * [TODO] Handle failure
     */
   def forkAndSearch(searchId: SearchId, searchContext: SearchContext) = Future {
-    RankedItemIds(searchId, itemScores = IndexedSeq(ItemScore(CatalogueItemId(123456L), 1.0f)))
+    RankedItemIds(searchId, itemScores = IndexedSeq(ItemScore(CatalogueItemId(199282919L, 1992829192L, 1992821919L), 1.0f)))
     // val query = searchContext.query
     // val collector = TopScoreDocCollector.create(settings.SEARCH_RESULT_PAGE_SIZE)
     // indxSearcher.search(query, collector)
