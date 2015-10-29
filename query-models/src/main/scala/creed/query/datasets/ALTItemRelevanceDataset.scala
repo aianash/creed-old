@@ -23,7 +23,7 @@ import commons.catalogue._, attributes._
  */
 case class ItemFeature(
   itemTypeGroup: ItemTypeGroup,
-  styles: Seq[ClothingStyle],
+  styles: ClothingStyles,
   fabric: ApparelFabric,
   fit: ApparelFit,
   colors: Colors,
@@ -32,7 +32,7 @@ case class ItemFeature(
 
   def compare(that: ItemFeature) = {
     if((this.itemTypeGroup.name == that.itemTypeGroup.name) &&
-      (this.styles.map(_.name) == that.styles.map(_.name)) &&
+      (this.styles.styles.map(_.name) == that.styles.styles.map(_.name)) &&
       (this.fabric.fabric == that.fabric.fabric) &&
       (this.fit.fit == that.fit.fit) &&
       (this.colors.values == that.colors.values) &&
@@ -171,11 +171,11 @@ class ALTItemRelevanceDataset(db: DB) {
    * @param {ClothingStyle} clothing style
    * @param {Float} relevance of alt to given clothing style
    */
-  private def addClothingStyles(alt: ALT, styles: Seq[ClothingStyle], relevance: Float) = {
+  private def addClothingStyles(alt: ALT, styles: ClothingStyles, relevance: Float) = {
     val rel: java.lang.Float = relevance
     val count: java.lang.Integer  = 1
 
-    styles foreach { style =>
+    styles.styles foreach { style =>
       val entry = Array[Object](alt.activity.value, alt.look.value, alt.timeWeather.value, style.name, rel, count)
       val iter  = Fun.filter(altsClothingStyle, alt.activity.value, alt.look.value, alt.timeWeather.value, style.name, rel).iterator
       if(iter.hasNext) {

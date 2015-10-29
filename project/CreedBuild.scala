@@ -99,6 +99,7 @@ object CreedBuild extends Build with StandardLibraries {
       ++ Libs.hemingway
       ++ Libs.akka
       ++ Libs.commonsCore
+      ++ Libs.lucene
   ).dependsOn(core)
 
   lazy val query = Project(
