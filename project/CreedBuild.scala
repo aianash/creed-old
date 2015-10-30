@@ -75,7 +75,8 @@ object CreedBuild extends Build with StandardLibraries {
     libraryDependencies ++= Seq(
       "com.goshoplane" %% "neutrino-core" % "0.0.1",
       "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons,
-      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" // artifacts (Artifact("stanford-corenlp", "models"), Artifact("stanford-corenlp"))
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" classifier "models"
     ) ++ Libs.commonsCore
       ++ Libs.commonsCatalogue
       ++ Libs.playJson
@@ -93,7 +94,8 @@ object CreedBuild extends Build with StandardLibraries {
 
     libraryDependencies ++= Seq(
       "com.goshoplane" %% "neutrino-core" % "0.0.1",
-      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" // artifacts (Artifact("stanford-corenlp", "models"), Artifact("stanford-corenlp"))
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" classifier "models"
     ) ++ Libs.lucene
       ++ Libs.fastutil
       ++ Libs.hemingway
