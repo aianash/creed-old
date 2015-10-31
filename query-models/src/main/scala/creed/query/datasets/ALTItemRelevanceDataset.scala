@@ -40,6 +40,16 @@ case class ItemFeature(
       (this.stylingTips.text == that.stylingTips.text)) 0 else 1
   }
 
+  override def toString = {
+    var str = s"Styles: ${styles.styles.map(_.name)}\n"
+    str += s"Fabric: ${fabric.fabric}\n"
+    str += s"Fit: ${fit.fit}\n"
+    str += s"Colors: ${colors.values}\n"
+    str += s"Description: ${descr.text}\n"
+    str += s"Styling Tips: ${stylingTips.text}\n"
+    str
+  }
+
 }
 
 /**
