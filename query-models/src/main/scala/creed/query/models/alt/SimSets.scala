@@ -112,7 +112,7 @@ object SimSet {
 
 }
 
-case class ScoredSimSetIds[I <: Intent[I]](simsets: IndexedSeq[(String, Double)]) {
+case class ScoredSimSetIds[I <: Intent](simsets: IndexedSeq[(String, Double)]) {
   def ++(that: ScoredSimSetIds[I]): ScoredSimSetIds[I] = copy(simsets = simsets ++ that.simsets)
 }
 
@@ -133,11 +133,11 @@ class SimSets(db: DB) {
 
   private val similarity = Jaccard(0.4)
 
-  def simsets(target: Intent[Activity], context: (Intent[Look], Intent[TimeWeather])) = simsets[Intent[Activity]](target.value, context._1.value -> context._2.value)
-  def simsets(target: Intent[Look], context: (Intent[Activity], Intent[TimeWeather])) = simsets[Intent[Look]](target.value, context._1.value -> context._2.value)
-  def simsets(target: Intent[TimeWeather], context: (Intent[Activity], Intent[Look])) = simsets[Intent[TimeWeather]](target.value, context._1.value -> context._2.value)
+  def simsets(target: Activity, context: (Look, TimeWeather)) = simsets[Activity](target.value, context._1.value -> context._2.value)
+  def simsets(target: Look, context: (Activity, TimeWeather)) = simsets[Look](target.value, context._1.value -> context._2.value)
+  def simsets(target: TimeWeather, context: (Activity, Look)) = simsets[TimeWeather](target.value, context._1.value -> context._2.value)
 
-  private def simsets[I <: Intent[I] : Namespace](str: String, context: (String, String)): ScoredSimSetIds[I] = {
+  private def simsets[I <: Intent : Namespace](str: String, context: (String, String)): ScoredSimSetIds[I] = {
     val namespace = implicitly[Namespace[I]]
     val similar: IndexedSeq[(String, Double)] =
       dictionary.findSimilar(str, similarity)
@@ -149,7 +149,7 @@ class SimSets(db: DB) {
     else ScoredSimSetIds[I](result)
   }
 
-  def simsetsAnyContext[I <: Intent[I] : Namespace](str: String, context: (Seq[String], Seq[String])): ScoredSimSetIds[I] = {
+  def simsetsAnyContext[I <: Intent : Namespace](str: String, context: (Seq[String], Seq[String])): ScoredSimSetIds[I] = {
     val namespace = implicitly[Namespace[I]]
     val similar: IndexedSeq[(String, Double)] =
       dictionary.findSimilar(str, similarity)
@@ -201,7 +201,7 @@ class SimSets(db: DB) {
 
 object SimSets {
 
-  trait Namespace[I <: Intent[I]] {
+  trait Namespace[I <: Intent] {
     def str: String
     def partOf(simsetId: String) = {
       val splits = simsetId.split('.')
@@ -211,14 +211,14 @@ object SimSets {
   }
 
   object Namespace {
-    implicit object ActivityNamespace extends Namespace[Intent[Activity]] { val str = "a" }
-    implicit object LookNamespace extends Namespace[Intent[Look]] { val str = "l" }
-    implicit object TimeWeatherNamespace extends Namespace[Intent[TimeWeather]] { val str = "tw" }
+    implicit object ActivityNamespace extends Namespace[Activity] { val str = "a" }
+    implicit object LookNamespace extends Namespace[Look] { val str = "l" }
+    implicit object TimeWeatherNamespace extends Namespace[TimeWeather] { val str = "tw" }
   }
 
-  def newBuildr[I <: Intent[I] : Namespace](errorConfidence: Double): Buildr[I] = new Buildr[I](errorConfidence)
+  def newBuildr[I <: Intent : Namespace](errorConfidence: Double): Buildr[I] = new Buildr[I](errorConfidence)
 
-  class Buildr[I <: Intent[I] : Namespace](errorConfidence: Double) {
+  class Buildr[I <: Intent : Namespace](errorConfidence: Double) {
     private val namespace = implicitly[Namespace[I]].str
 
     private val cooccurSimSetBuildrs = new ObjectArrayList[SimSet.Buildr[Cooccur]]

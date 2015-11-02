@@ -81,7 +81,7 @@ private[alt] class Occurrences {
     * @param target - target intent
     * @return Return value - blah blah
     */
-  def add(target: Intent[_], context: (Intent[_], Intent[_]), weight: Double): Unit =
+  def add(target: Intent, context: (Intent, Intent), weight: Double): Unit =
     add(target.value, context._1.value -> context._2.value, weight)
 
   /** Description of function
