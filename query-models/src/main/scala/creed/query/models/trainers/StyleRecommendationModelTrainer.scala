@@ -11,7 +11,9 @@ import creed.query.datasets._
 import creed.query.ALTStyleSet
 
 
-object StyleRecommendationModelTrainer extends ModelTrainer {
+trait TrainConfig extends java.util.Map[String, String]
+
+object StyleRecommendationModelTrainer {
 
   private val scoreMap = Map.empty[(ALT, ClothingStyle), Float]
   private val countMap = Map.empty[(ALT, ClothingStyle), Int]
