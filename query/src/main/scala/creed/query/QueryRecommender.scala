@@ -21,16 +21,16 @@ class QueryRecommender(backchannel: ActorSelection) extends Actor {
   val stylesCache = new ConcurrentHashMap[SearchId, Set[ClothingStyle]]
 
   def receive = {
-    case RecommendFor(searchId, query, alt) =>
+    case RecommendFor(searchId, query, simsets) =>
       println("recommender")
-      model.styles(alt)
-        .foreach { styles =>
-          if(isNewFor(searchId, styles)) {
-            backchannel ! SendThruBackchannelFor(searchId, QueryRecommendationsFor(searchId, QueryRecommendations(styles, QueryFilters.get(styles))))
-            searchContext ! ProcessForSearchContext(searchId, query, styles)
-            println("send to process for search context")
-          }
-        }
+      // model.styles(alt)
+      //   .foreach { styles =>
+      //     if(isNewFor(searchId, styles)) {
+      //       backchannel ! SendThruBackchannelFor(searchId, QueryRecommendationsFor(searchId, QueryRecommendations(styles, QueryFilters.get(styles))))
+      //       searchContext ! ProcessForSearchContext(searchId, query, styles)
+      //       println("send to process for search context")
+      //     }
+      //   }
   }
 
   private def isNewFor(searchId: SearchId, styles: Set[ClothingStyle]) =

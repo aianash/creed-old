@@ -41,10 +41,10 @@ trait IntentBuildr[I <: Intent[I]] {
 }
 
 object Intent {
-  val ACTIVITYCLAZZ = classOf[Activity]
-  val LOOKCLAZZ = classOf[Look]
+  val ACTIVITYCLAZZ    = classOf[Activity]
+  val LOOKCLAZZ        = classOf[Look]
   val TIMEWEATHERCLAZZ = classOf[TimeWeather]
-  val ANYTHINGCLAZZ = Anything.getClass
+  val ANYTHINGCLAZZ    = Anything.getClass
 }
 
 object Activity {
