@@ -133,9 +133,9 @@ class SimSets(db: DB) {
 
   private val similarity = Jaccard(0.4)
 
-  def simsets(target: Activity, context: (Look, TimeWeather)) = simsets[Activity](target.value, context._1.value -> context._2.value)
-  def simsets(target: Look, context: (Activity, TimeWeather)) = simsets[Look](target.value, context._1.value -> context._2.value)
-  def simsets(target: TimeWeather, context: (Activity, Look)) = simsets[TimeWeather](target.value, context._1.value -> context._2.value)
+  def simsets(target: Intent[Activity], context: (Intent[Look], Intent[TimeWeather])) = simsets[Intent[Activity]](target.value, context._1.value -> context._2.value)
+  def simsets(target: Intent[Look], context: (Intent[Activity], Intent[TimeWeather])) = simsets[Intent[Look]](target.value, context._1.value -> context._2.value)
+  def simsets(target: Intent[TimeWeather], context: (Intent[Activity], Intent[Look])) = simsets[Intent[TimeWeather]](target.value, context._1.value -> context._2.value)
 
   private def simsets[I <: Intent[I] : Namespace](str: String, context: (String, String)): ScoredSimSetIds[I] = {
     val namespace = implicitly[Namespace[I]]
@@ -211,9 +211,9 @@ object SimSets {
   }
 
   object Namespace {
-    implicit object ActivityNamespace extends Namespace[Activity] { val str = "a" }
-    implicit object LookNamespace extends Namespace[Look] { val str = "l" }
-    implicit object TimeWeatherNamespace extends Namespace[TimeWeather] { val str = "tw" }
+    implicit object ActivityNamespace extends Namespace[Intent[Activity]] { val str = "a" }
+    implicit object LookNamespace extends Namespace[Intent[Look]] { val str = "l" }
+    implicit object TimeWeatherNamespace extends Namespace[Intent[TimeWeather]] { val str = "tw" }
   }
 
   def newBuildr[I <: Intent[I] : Namespace](errorConfidence: Double): Buildr[I] = new Buildr[I](errorConfidence)

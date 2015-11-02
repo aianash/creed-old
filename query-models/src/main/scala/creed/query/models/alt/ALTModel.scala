@@ -34,7 +34,7 @@ class ALTModel(db: DB) {
 
   private val intentSim = Jaccard(0.4)
 
-  def simsets(nouns: Seq[String], max: Int = 10): (ScoredSimSetIds[Activity], ScoredSimSetIds[Look], ScoredSimSetIds[TimeWeather]) = {
+  def simsets(nouns: Seq[String], max: Int = 10): (ScoredSimSetIds[Intent[Activity]], ScoredSimSetIds[Intent[Look]], ScoredSimSetIds[Intent[TimeWeather]]) = {
     val intents = nouns.flatMap(this.intents.findSimilar(_, intentSim))
                        .map(entry => entry.str.get -> entry.payload("type"))
                        .groupBy(_._2)
@@ -43,9 +43,9 @@ class ALTModel(db: DB) {
     val looks        = intents.get("look").map(_.map(_._1)) getOrElse Seq.empty[String]
     val timeWeathers = intents.get("timeWeather").map(_.map(_._1)) getOrElse Seq.empty[String]
 
-    val activitySimsets    = simsets[Activity](activities, looks, timeWeathers)
-    val lookSimsets        = simsets[Look](looks, activities, timeWeathers)
-    val timeWeatherSimsets = simsets[TimeWeather](timeWeathers, activities, looks)
+    val activitySimsets    = simsets[Intent[Activity]](activities, looks, timeWeathers)
+    val lookSimsets        = simsets[Intent[Look]](looks, activities, timeWeathers)
+    val timeWeatherSimsets = simsets[Intent[TimeWeather]](timeWeathers, activities, looks)
 
     (activitySimsets, lookSimsets, timeWeatherSimsets)
   }
@@ -108,15 +108,15 @@ object ALTModel {
       twOccurences  add(timeWeather, activity -> look,        p)
     }
 
-    val activitySimsetsBuildr = SimSets.newBuildr[Activity](0.8)
+    val activitySimsetsBuildr = SimSets.newBuildr[Intent[Activity]](0.8)
     actOccurences.cooccurs.foldLeft(0.5) { (atleastIG, cooccur) => activitySimsetsBuildr.add(cooccur, atleastIG) }
     actOccurences.singles.foreach { single => activitySimsetsBuildr.add(single) }
 
-    val lookSimsetsBuildr = SimSets.newBuildr[Look](0.8)
+    val lookSimsetsBuildr = SimSets.newBuildr[Intent[Look]](0.8)
     lkOccurences.cooccurs.foldLeft(0.5) { (atleastIG, cooccur) => lookSimsetsBuildr.add(cooccur, atleastIG) }
     lkOccurences.singles.foreach { single => lookSimsetsBuildr.add(single) }
 
-    val timeWeatherSimsetsBuildr = SimSets.newBuildr[TimeWeather](0.8)
+    val timeWeatherSimsetsBuildr = SimSets.newBuildr[Intent[TimeWeather]](0.8)
     twOccurences.cooccurs.foldLeft(0.5) { (atleastIG, cooccur) => timeWeatherSimsetsBuildr.add(cooccur, atleastIG) }
     twOccurences.singles.foreach { single => timeWeatherSimsetsBuildr.add(single) }
 
