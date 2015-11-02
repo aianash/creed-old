@@ -9,10 +9,10 @@ object MapDBUtils {
 
   val ARRAY5 = new BTreeKeySerializer.ArrayKeySerializer(
     Array(Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR),
-    Array(Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC))
+    Array(Serializer.JAVA, Serializer.JAVA, Serializer.JAVA, Serializer.JAVA, Serializer.JAVA))
 
   val ARRAY6 = new BTreeKeySerializer.ArrayKeySerializer(
     Array(Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR, Fun.COMPARATOR),
-    Array(Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC, Serializer.BASIC))
+    Array(Serializer.JAVA, Serializer.JAVA, Serializer.JAVA, Serializer.JAVA, Serializer.JAVA, Serializer.JAVA))
 
 }
