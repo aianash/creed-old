@@ -8,6 +8,8 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.math.Ordered
 
+import java.io.FileWriter
+
 import org.mapdb._
 
 import play.api.libs.json._
@@ -15,6 +17,8 @@ import play.api.libs.json._
 import core._, utils.MapDBUtils
 
 import commons.catalogue._, attributes._
+
+import org.apache.commons.csv._
 
 
 /**
@@ -150,6 +154,30 @@ class ALTItemRelevanceDataset(db: DB) {
           (itg, rel, count)
         }
     }
+
+  /** Description of function
+    *
+    * @param Parameter1 - blah blah
+    * @return Return value - blah blah
+    */
+  def writeCSV(filePath: String) = {
+    val writer = new FileWriter(filePath, true)
+    val csvPrntr = new CSVPrinter(writer, CSVFormat.RFC4180)
+    for(_ @ (alt, feature, relevance, count) <- iterator[ItemFeature]) {
+      csvPrntr.printRecord(alt.activity.value,
+                           alt.look.value,
+                           alt.timeWeather.value,
+                           feature.itemTypeGroup.name,
+                           feature.styles.styles.mkString(":"),
+                           feature.fabric.fabric,
+                           feature.fit.fit,
+                           feature.colors.values.mkString(":"),
+                           feature.stylingTips.text,
+                           feature.descr.text,
+                           relevance.toString,
+                           count.toString)
+    }
+  }
 
   /**
    * This function adds given {ALT}, {ItemFeature} and corresponding relevance to the item feature

@@ -94,6 +94,7 @@ object CreedBuild extends Build with StandardLibraries {
 
     libraryDependencies ++= Seq(
       "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "org.apache.commons" % "commons-csv" % "1.2",
       "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2",
       "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" classifier "models"
     ) ++ Libs.lucene
