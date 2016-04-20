@@ -9,11 +9,7 @@ import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
-// import com.typesafe.sbt.SbtStartScript
-
 import sbtassembly.AssemblyPlugin.autoImport._
-
-import com.twitter.scrooge.ScroogeSBT
 
 import org.apache.maven.artifact.handler.DefaultArtifactHandler
 
@@ -21,11 +17,16 @@ import com.typesafe.sbt.SbtNativePackager._, autoImport._
 import com.typesafe.sbt.packager.Keys._
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd, CmdLike}
 
-object CreedBuild extends Build with Libraries {
+import com.goshoplane.sbt.standard.libraries.StandardLibraries
+
+
+object CreedBuild extends Build with StandardLibraries {
+
+  lazy val makeScript = TaskKey[Unit]("make-script", "make script in local directory to run main classes")
 
   def sharedSettings = Seq(
     organization := "com.goshoplane",
-    version := "0.0.1",
+    version := "1.0.0",
     scalaVersion := Version.scala,
     crossScalaVersions := Seq(Version.scala, "2.11.4"),
     scalacOptions := Seq("-unchecked", "-optimize", "-deprecation", "-feature", "-language:higherKinds", "-language:implicitConversions", "-language:postfixOps", "-language:reflectiveCalls", "-Yinline-warnings", "-encoding", "utf8"),
@@ -34,15 +35,7 @@ object CreedBuild extends Build with Libraries {
     fork := true,
     javaOptions += "-Xmx2500M",
 
-    resolvers ++= Seq(
-      // "ReaderDeck Releases" at "http://repo.readerdeck.com/artifactory/readerdeck-releases",
-      "anormcypher" at "http://repo.anormcypher.org/",
-      "Akka Repository" at "http://repo.akka.io/releases",
-      "Spray Repository" at "http://repo.spray.io/",
-      "twitter-repo" at "http://maven.twttr.com",
-      "Typesafe Repository releases" at "http://repo.typesafe.com/typesafe/releases/",
-      "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository"
-    ),
+    resolvers ++= StandardResolvers,
 
     publishMavenStyle := true
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
@@ -53,135 +46,114 @@ object CreedBuild extends Build with Libraries {
     base = file("."),
     settings = Project.defaultSettings ++
       sharedSettings
-  ) aggregate (core, indexer, service)
+  ) aggregate (client, core, search, query, queryModels, service)
 
+  lazy val client = Project(
+    id = "creed-client",
+    base = file("client"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).settings(
+    name := "creed-client",
 
+    libraryDependencies ++= Seq(
+      "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons
+    ) ++ Libs.commonsCore
+      ++ Libs.commonsCatalogue
+      ++ Libs.playJson
+  )
 
   lazy val core = Project(
     id = "creed-core",
     base = file("core"),
     settings = Project.defaultSettings ++
-      sharedSettings ++
-      // SbtStartScript.startScriptForClassesSettings ++
-      ScroogeSBT.newSettings
+      sharedSettings
   ).settings(
     name := "creed-core",
 
     libraryDependencies ++= Seq(
-    ) ++ Libs.scalaz
-      ++ Libs.scroogeCore
-      ++ Libs.finagleThrift
-      ++ Libs.libThrift
-      ++ Libs.akka
-      ++ Libs.scaldi
-      ++ Libs.shoplaneCommons
-      ++ Libs.lucene
-      ++ Libs.play
-  )
+      "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons,
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" classifier "models"
+    ) ++ Libs.commonsCore
+      ++ Libs.commonsCatalogue
+      ++ Libs.playJson
+      ++ Libs.mapdb
+  ).dependsOn(client)
 
-  lazy val indexer = Project(
-    id = "creed-indexer",
-    base = file("indexer"),
+
+  lazy val queryModels = Project(
+    id = "creed-query-models",
+    base = file("query-models"),
     settings = Project.defaultSettings ++
       sharedSettings
-      // SbtStartScript.startScriptForClassesSettings
-  ).enablePlugins(JavaAppPackaging)
-  .settings(
-    name := "creed-indexer",
-    mainClass in Compile := Some("creed.indexer.IndexingServer"),
+  ).settings(
+    name := "creed-query-models",
 
-    // TODO: remove echo statement once verified
-    dockerEntrypoint := Seq("sh", "-c", "export ONYX_HOST=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'` && echo $ONYX_HOST && bin/creed-indexer $*"),
-    dockerRepository := Some("docker"),
-    dockerBaseImage := "phusion/baseimage",
-    dockerCommands ++= Seq(
-      Cmd("USER", "root"),
-      new CmdLike {
-        def makeContent = """|RUN \
-                             |  echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-                             |  add-apt-repository -y ppa:webupd8team/java && \
-                             |  apt-get update && \
-                             |  apt-get install -y oracle-java7-installer && \
-                             |  rm -rf /var/lib/apt/lists/* && \
-                             |  rm -rf /var/cache/oracle-jdk7-installer""".stripMargin
-      }
-    ),
+    libraryDependencies ++= Seq(
+      "com.goshoplane" %% "neutrino-core" % "0.0.1",
+      "org.apache.commons" % "commons-csv" % "1.2",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2" classifier "models"
+    ) ++ Libs.lucene
+      ++ Libs.fastutil
+      ++ Libs.hemingway
+      ++ Libs.akka
+      ++ Libs.commonsCore
+      ++ Libs.lucene
+  ).dependsOn(core)
+
+  lazy val query = Project(
+    id = "creed-query",
+    base = file("query"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).settings(
+    name := "creed-query",
+
+    libraryDependencies ++= Seq(
+      "com.goshoplane" %% "neutrino-core" % "0.0.1"
+    ) ++ Libs.lucene
+      ++ Libs.akka
+      ++ Libs.playJson
+  ).dependsOn(core, queryModels)
+
+  lazy val search = Project(
+    id = "creed-search",
+    base = file("search"),
+    settings = Project.defaultSettings ++
+      sharedSettings
+  ).settings(
+    name := "creed-search",
+
     libraryDependencies ++= Seq(
     ) ++ Libs.lucene
       ++ Libs.akka
-      ++ Libs.scalaz
+      ++ Libs.akkaCluster
+      ++ Libs.fastutil
       ++ Libs.slf4j
       ++ Libs.logback
-      ++ Libs.scaldiAkka
-      ++ Libs.bijection
-      ++ Libs.kafka
-      ++ Libs.play
-      ++ Libs.shoplaneCommons
-  ).dependsOn(core)
+  ).dependsOn(core, query)
 
   lazy val service = Project(
     id = "creed-service",
     base = file("service"),
     settings = Project.defaultSettings ++
       sharedSettings
-      // SbtStartScript.startScriptForClassesSettings
   ).enablePlugins(JavaAppPackaging)
   .settings(
     name := "creed-service",
     mainClass in Compile := Some("creed.service.CreedServer"),
 
-    dockerExposedPorts := Seq(1601),
-    // TODO: remove echo statement once verified
-    dockerEntrypoint := Seq("sh", "-c", "export CREED_HOST=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'` && echo $CREED_HOST && bin/creed-service $*"),
-    dockerRepository := Some("docker"),
-    dockerBaseImage := "phusion/baseimage",
-    dockerCommands ++= Seq(
-      Cmd("USER", "root"),
-      new CmdLike {
-        def makeContent = """|RUN \
-                             |  echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-                             |  add-apt-repository -y ppa:webupd8team/java && \
-                             |  apt-get update && \
-                             |  apt-get install -y oracle-java7-installer && \
-                             |  rm -rf /var/lib/apt/lists/* && \
-                             |  rm -rf /var/cache/oracle-jdk7-installer""".stripMargin
-      }
-    ),
     libraryDependencies ++= Seq(
-    ) ++ Libs.akka
-      ++ Libs.slf4j
-      ++ Libs.logback
-      ++ Libs.finagleCore
-      ++ Libs.scalaJLine
-      ++ Libs.mimepull
-      ++ Libs.scaldi
-      ++ Libs.scaldiAkka
-      ++ Libs.bijection
-      ++ Libs.lucene
-      ++ Libs.play
-      ++ Libs.shoplaneCommons
-  ).dependsOn(core, indexer, queryplanner)
+      "com.goshoplane" %% "commons-owner" % Version.shoplaneCommons
+    ) ++ Libs.microservice,
 
-  lazy val queryplanner = Project(
-    id = "creed-queryplanner",
-    base = file("queryplanner"),
-    settings = Project.defaultSettings ++
-      sharedSettings
-      // SbtStartScript.startScriptForClassesSettings
-  ).settings(
-    name := "creed-queryplanner",
-
-    libraryDependencies ++= Seq(
-    ) ++ Libs.akka
-      ++ Libs.slf4j
-      ++ Libs.logback
-      ++ Libs.scalaJLine
-      ++ Libs.mimepull
-      ++ Libs.scaldi
-      ++ Libs.scaldiAkka
-      ++ Libs.bijection
-      ++ Libs.lucene
-      ++ Libs.play
-  ).dependsOn(core)
-
+    makeScript <<= (stage in Universal, stagingDirectory in Universal, baseDirectory in ThisBuild, streams) map { (_, dir, cwd, streams) =>
+      var path = dir / "bin" / "creed-service"
+      sbt.Process(Seq("ln", "-sf", path.toString, "creed-service"), cwd) ! streams.log
+    }
+  ).dependsOn(search)
 }

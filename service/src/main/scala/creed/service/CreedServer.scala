@@ -1,22 +1,25 @@
-package creed.service
+package creed
+package service
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-import com.twitter.util.Await
+import akka.actor.ActorSystem
+import akka.serialization._
 
-import creed.service.injectors._
-import creed.core.injectors._
+import commons.microservice.Microservice
+
+import components._
+
+import commons.catalogue._, collection._
+
 
 object CreedServer {
 
   def main(args: Array[String]) {
-
     val config = ConfigFactory.load("creed")
-
-    implicit val appModule = new CreedServiceModule :: new ActorSystemModule(config)
-
-    val service = CreedService.start
-
+    val system = ActorSystem(config.getString("creed.actorSystem"), config)
+    // println(SerializationExtension(system).findSerializerFor(CatalogueItems(Seq.empty[CatalogueItem])))
+    Microservice(system).start(IndexedSeq(SearchComponent))
   }
 
 }

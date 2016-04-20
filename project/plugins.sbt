@@ -10,18 +10,14 @@ resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositori
 
 resolvers += "twitter-repo" at "http://maven.twttr.com"
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.13.0")
-
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.10.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.9")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
 
-addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.15.0")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.2")
+
+addSbtPlugin("com.goshoplane" % "sbt-standard-libraries" % "0.1.2")
 
 scalaVersion := "2.10.4"
